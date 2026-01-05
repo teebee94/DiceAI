@@ -36,7 +36,7 @@ The easiest way is to use the automated GitHub Actions workflow:
    
    When prompted for credentials:
    - Username: Your GitHub username
-   - Password: Use your personal access token: `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`
+   - Password: Use your personal access token (provided separately)
 
 4. **Download the APK**:
    - The GitHub Action will automatically build the app

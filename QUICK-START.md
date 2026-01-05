@@ -18,10 +18,7 @@ git branch -M main
 git push -u origin main
 ```
 
-**When prompted for password**, use your personal access token:
-```
-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
-```
+**When prompted for password**, use your personal access token (provided separately)
 
 ### 2. Get Your APK
 
