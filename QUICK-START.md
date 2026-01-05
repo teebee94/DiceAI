@@ -6,7 +6,7 @@
 
 **Open this link on your Android phone:**
 
-👉 **https://github.com/teebee94/DiceAI/releases/latest/download/app-debug.apk**
+👉 **https://github.com/teebee94/DiceAI/releases/download/v1.0.5/app-debug.apk**
 
 ### 📲 Install Steps
 
