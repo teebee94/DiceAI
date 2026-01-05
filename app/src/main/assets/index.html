@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI-powered dice prediction system with self-learning capabilities">
+  <title>🎲 AI Dice Predictor | Self-Learning System</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="index.css">
+
+  <!-- Tesseract.js for OCR -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div style="max-width: 1400px; margin: 0 auto;">
+      <h1 class="header-title">🎲 AI Dice Predictor</h1>
+      <p class="header-subtitle">Self-Learning Pattern Recognition System</p>
+
+      <!-- Timeframe Selector -->
+      <div
+        style="margin-top: var(--space-lg); display: flex; gap: var(--space-md); align-items: center; justify-content: center; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: var(--space-sm);">
+          <label for="timeframeSelect"
+            style="color: var(--color-text-secondary); font-size: var(--font-size-sm); font-weight: 600;">⏱️ Game
+            Type:</label>
+          <select id="timeframeSelect" class="timeframe-select" onchange="app.changeTimeframe(this.value)">
+            <option value="1min">1 Minute (1440 runs/day)</option>
+            <option value="3min" selected>3 Minutes (480 runs/day)</option>
+            <option value="5min">5 Minutes (288 runs/day)</option>
+            <option value="10min">10 Minutes (144 runs/day)</option>
+          </select>
+        </div>
+        <div id="currentGameInfo"
+          style="color: var(--color-text-tertiary); font-size: var(--font-size-sm); padding: var(--space-xs) var(--space-md); background: rgba(255,255,255,0.1); border-radius: var(--radius-sm); backdrop-filter: blur(10px);">
+          Current Run: <span id="currentRunNumber">--</span> | Next Period: <span id="nextPeriodNumber">--</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="container">
+
+    <!-- Prediction Section -->
+    <div class="card" style="animation-delay: 0s;">
+      <div class="card-header">
+        <h3 class="card-title">
+          <span class="card-icon">🔮</span>
+          AI Prediction
+        </h3>
+        <button class="btn btn-primary btn-sm" onclick="app.generatePrediction()">
+          Generate Prediction
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="prediction-display" id="predictionDisplay">
+          <div class="prediction-number" id="predictionNumber">?</div>
+          <p class="prediction-label">Predicted Sum</p>
+
+          <div class="prediction-details">
+            <span id="predictionType">-</span>
+            <span id="predictionParity">-</span>
+          </div>
+
+          <div class="confidence-bar">
+            <div class="confidence-fill" id="confidenceFill"></div>
+          </div>
+          <p class="confidence-text">
+            <span id="confidenceText">-</span>
+          </p>
+
+          <!-- Competitive Mode Controls -->
+          <div
+            style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--color-border);">
+            <div
+              style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm);">
+              <label style="font-size: var(--font-size-sm); color: var(--color-text-secondary); font-weight: 600;">
+                🏆 Competitive Mode
+              </label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="competitiveModeToggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div id="confidenceThresholdContainer" style="display: none;">
+              <label
+                style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-xs); display: block;">
+                Minimum Confidence: <span id="thresholdValue">55</span>%
+              </label>
+              <input type="range" id="confidenceThreshold" min="50" max="80" value="55"
+                style="width: 100%; accent-color: var(--color-primary);">
+            </div>
+          </div>
+        </div>
+        <!-- Feedback Buttons -->
+        <div class="feedback-buttons" id="feedbackButtons" style="display: none;">
+          <button class="btn btn-success" onclick="app.submitFeedback(true)">
+            ✓ Correct
+          </button>
+          <button class="btn btn-error" onclick="app.submitFeedback(false)">
+            ✗ Wrong
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Section -->
+    <div class="grid-2">
+      <!-- Manual Entry -->
+      <div class="card" style="animation-delay: 0.1s;">
+        <div class="card-header">
+          <h3 class="card-title">
+            <span class="card-icon">⌨️</span>
+            Enter Result
+          </h3>
+        </div>
+        <div class="card-body">
+          <!-- Period Input -->
+          <div class="mb-md">
+            <label for="periodInput"
+              style="display: block; margin-bottom: var(--space-xs); color: var(--color-text-secondary); font-size: var(--font-size-sm); font-weight: 600;">
+              📅 Period Number
+            </label>
+            <input type="text" id="periodInput" class="period-input" placeholder="e.g., 2025122910102089"
+              style="width: 100%; padding: var(--space-sm); border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg-tertiary); color: var(--color-text); font-size: var(--font-size-base);">
+            <div id="periodValidation"
+              style="margin-top: var(--space-xs); font-size: var(--font-size-xs); color: var(--color-text-muted);">
+            </div>
+          </div>
+
+          <!-- Dice Entry (Optional) -->
+          <div class="mb-md">
+            <label
+              style="display: block; margin-bottom: var(--space-xs); color: var(--color-text-secondary); font-size: var(--font-size-sm); font-weight: 600;">
+              🎲 Individual Dice (Optional)
+            </label>
+            <div style="display: flex; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+              <input type="number" id="dice1" class="dice-input" min="1" max="6" placeholder="D1"
+                style="flex: 1; padding: var(--space-sm); border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg-tertiary); color: var(--color-text); text-align: center;">
+              <input type="number" id="dice2" class="dice-input" min="1" max="6" placeholder="D2"
+                style="flex: 1; padding: var(--space-sm); border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg-tertiary); color: var(--color-text); text-align: center;">
+              <input type="number" id="dice3" class="dice-input" min="1" max="6" placeholder="D3"
+                style="flex: 1; padding: var(--space-sm); border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg-tertiary); color: var(--color-text); text-align: center;">
+            </div>
+            <div id="diceSum"
+              style="font-size: var(--font-size-sm); color: var(--color-text-muted); text-align: center;"></div>
+          </div>
+
+          <p class="text-center mb-md" style="color: var(--color-text-secondary);">
+            Click a sum or enter dice above
+          </p>
+          <div class="number-pad" id="numberPad"></div>
+        </div>
+      </div>
+
+      <!-- Image Upload -->
+      <div class="card" style="animation-delay: 0.15s;">
+        <div class="card-header">
+          <h3 class="card-title">
+            <span class="card-icon">📷</span>
+            Image Analysis
+          </h3>
+        </div>
+        <div class="card-body">
+          <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">📸</div>
+            <div class="upload-text">Drag & drop screenshots or click to upload</div>
+            <div class="upload-hint">Supports PNG, JPG, WebP • Bulk processing available</div>
+            <input type="file" id="fileInput" accept="image/png,image/jpeg,image/jpg,image/webp" multiple
+              style="display: none;">
+          </div>
+          <div id="uploadProgress" style="display: none;">
+            <div class="progress-bar">
+              <div class="progress-fill" id="uploadProgressFill" style="width: 0%"></div>
+            </div>
+            <p class="text-center mt-sm" id="uploadStatus"
+              style="color: var(--color-text-secondary); font-size: var(--font-size-sm);"></p>
+          </div>
+          <div id="extractedNumbers" class="mt-md"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats & Learning -->
+    <div class="grid-2">
+      <!-- Statistics -->
+      <div class="card" style="animation-delay: 0.2s;">
+        <div class="card-header">
+          <h3 class="card-title">
+            <span class="card-icon">📊</span>
+            Statistics
+          </h3>
+        </div>
+        <div class="card-body">
+          <div class="stat-grid" id="statsGrid">
+            <div class="stat-item">
+              <div class="stat-value" id="statTotal">0</div>
+              <div class="stat-label">Total Rolls</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="statAccuracy">--%</div>
+              <div class="stat-label">Accuracy</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="statBig">0</div>
+              <div class="stat-label">Big (11-18)</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="statSmall">0</div>
+              <div class="stat-label">Small (3-10)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Learning Status -->
+      <div class="card" style="animation-delay: 0.25s;">
+        <div class="card-header">
+          <h3 class="card-title">
+            <span class="card-icon">🧠</span>
+            Learning Status
+          </h3>
+        </div>
+        <div class="card-body">
+          <div id="learningInsights"></div>
+          <div class="mt-lg">
+            <h4
+              style="font-size: var(--font-size-base); margin-bottom: var(--space-md); color: var(--color-text-secondary);">
+              Algorithm Performance
+            </h4>
+            <div class="algorithm-chart" id="algorithmChart"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hot/Cold Heatmap -->
+    <div class="card" style="animation-delay: 0.3s;">
+      <div class="card-header">
+        <h3 class="card-title">
+          <span class="card-icon">🔥</span>
+          Hot & Cold Numbers
+        </h3>
+      </div>
+      <div class="card-body">
+        <p class="text-center mb-md" style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">
+          Based on last 50 rolls • Red = Hot (frequent) • Blue = Cold (rare)
+        </p>
+        <div class="heatmap" id="heatmap"></div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="card" style="animation-delay: 0.35s;">
+      <div class="card-header">
+        <h3 class="card-title">
+          <span class="card-icon">📜</span>
+          History
+        </h3>
+        <div class="flex gap-md">
+          <button class="btn btn-outline btn-sm" onclick="app.exportData()">
+            💾 Export
+          </button>
+          <button class="btn btn-outline btn-sm" onclick="app.importData()">
+            📂 Import
+          </button>
+          <button class="btn btn-error btn-sm" onclick="app.clearAll()">
+            🗑️ Clear All
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="history-table-scroll">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Period</th>
+                <th>Sum</th>
+                <th>Dice</th>
+                <th>Type</th>
+                <th>Parity</th>
+                <th>Feedback</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <tr>
+                <td colspan="6" style="text-align: center; padding: var(--space-xl); color: var(--color-text-muted);">
+                  No history yet. Add numbers to start predicting!
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Hidden import input -->
+  <input type="file" id="importInput" accept=".json" style="display: none;">
+
+  <!-- Scripts -->
+  <script src="period-parser.js"></script>
+  <script src="prediction-engine.js"></script>
+  <script src="learning-engine.js"></script>
+  <script src="image-analyzer.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
