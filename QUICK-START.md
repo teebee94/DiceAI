@@ -1,44 +1,45 @@
-# 📝 Quick Setup Instructions
+# 📱 DiceAI - Quick Installation Guide
 
-## To build your APK, follow these steps:
+## **One-Tap Install (Mobile Phone)**
 
-### 1. Push to GitHub
+### 📥 Download APK
 
-```powershell
-cd "c:\Users\vansh\OneDrive\Desktop\New folder (2)\DiceAI"
+**Open this link on your Android phone:**
 
-# Initialize git (if not already done)
-git init
-git add .
-git commit -m "DiceAI Android App - Ready to build"
+👉 **https://github.com/teebee94/DiceAI/releases/latest/download/app-debug.apk**
 
-# Create a new repository on GitHub, then:
-git remote add origin https://github.com/YOUR-USERNAME/DiceAI.git
-git branch -M main
-git push -u origin main
-```
+### 📲 Install Steps
 
-**When prompted for password**, use your personal access token (provided separately)
-
-### 2. Get Your APK
-
-After pushing:
-
-1. Go to https://github.com/YOUR-USERNAME/DiceAI
-2. Click the **"Actions"** tab
-3. Wait 2-5 minutes for the build to complete
-4. Click on the completed workflow run
-5. Download **app-debug.apk** from artifacts
-
-**OR** check **Releases** page for the auto-created release!
-
-### 3. Install on Phone
-
-1. Transfer APK to your Android phone
-2. Enable "Install from Unknown Sources" in Settings
-3. Open and install the APK
-4. Enjoy! 🎲
+1. **Tap the download link** above on your phone
+2. **Open the downloaded file** (app-debug.apk)
+3. **Enable "Install from Unknown Sources"** if prompted
+4. **Tap Install** ✅
+5. **Done!** The app will open automatically
 
 ---
 
-For full details, see **INSTALLATION-GUIDE.md**
+## 🔄 For Developers
+
+If you want to update the app:
+
+```powershell
+cd "c:\Users\vansh\OneDrive\Desktop\New folder (2)\DiceAI"
+# Make your changes to the code
+git add .
+git commit -m "Your update message"
+git push
+```
+
+**The APK will automatically rebuild and be available at the same link in 2-3 minutes.**
+
+---
+
+## 📞 Having Issues?
+
+- **Can't download?** Make sure you're using an Android phone (not iPhone)
+- **Won't install?** Go to Settings → Security → Enable "Unknown Sources"
+- **App crashes?** Update your Android System WebView from Play Store
+
+---
+
+**Enjoy using DiceAI! 🎲**
