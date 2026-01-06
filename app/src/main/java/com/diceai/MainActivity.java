@@ -40,6 +40,9 @@ public class MainActivity extends Activity {
         webSettings.setDatabaseEnabled(true);
         webSettings.setDomStorageEnabled(true);
 
+        // Enable file access and mixed content for file chooser
+        webSettings.setMixedContentMode(android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+
         // WebViewClient to handle navigation
         webView.setWebViewClient(new WebViewClient() {
             @Override
