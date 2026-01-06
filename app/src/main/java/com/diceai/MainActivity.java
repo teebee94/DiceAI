@@ -14,7 +14,7 @@ import android.webkit.ConsoleMessage;
 import android.util.Log;
 
 public class MainActivity extends Activity {
-    
+
     private WebView webView;
     private static final int FILE_CHOOSER_REQUEST = 1;
     private ValueCallback<Uri[]> filePathCallback;
@@ -22,11 +22,11 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         // Create WebView
         webView = new WebView(this);
         setContentView(webView);
-        
+
         // Enable JavaScript
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -35,11 +35,11 @@ public class MainActivity extends Activity {
         webSettings.setAllowContentAccess(true);
         webSettings.setDatabaseEnabled(true);
         webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        
+
         // Enable localStorage
         webSettings.setDatabaseEnabled(true);
         webSettings.setDomStorageEnabled(true);
-        
+
         // WebViewClient to handle navigation
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -47,43 +47,63 @@ public class MainActivity extends Activity {
                 return false;
             }
         });
-        
+
         // WebChromeClient for file chooser and console logs
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
-            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, 
-                                           FileChooserParams fileChooserParams) {
+            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback,
+                    FileChooserParams fileChooserParams) {
                 MainActivity.this.filePathCallback = filePathCallback;
-                
+
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("image/*");
                 intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                
+
                 startActivityForResult(Intent.createChooser(intent, "Select Images"), FILE_CHOOSER_REQUEST);
                 return true;
             }
-            
+
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
                 Log.d("WebView", consoleMessage.message());
                 return true;
             }
         });
-        
+
         // Load the HTML file from assets
         webView.loadUrl("file:///android_asset/index.html");
+
+        // Request permissions for photo access
+        requestPermissions();
     }
-    
+
+    private void requestPermissions() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            // Android 13+
+            requestPermissions(new String[] {
+                    android.Manifest.permission.READ_MEDIA_IMAGES,
+                    android.Manifest.permission.CAMERA
+            }, 100);
+        } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            // Android 6-12
+            requestPermissions(new String[] {
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                    android.Manifest.permission.CAMERA
+            }, 100);
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == FILE_CHOOSER_REQUEST) {
-            if (filePathCallback == null) return;
-            
+            if (filePathCallback == null)
+                return;
+
             Uri[] results = null;
             if (resultCode == Activity.RESULT_OK && data != null) {
                 String dataString = data.getDataString();
                 if (dataString != null) {
-                    results = new Uri[]{Uri.parse(dataString)};
+                    results = new Uri[] { Uri.parse(dataString) };
                 } else if (data.getClipData() != null) {
                     int count = data.getClipData().getItemCount();
                     results = new Uri[count];
@@ -92,12 +112,12 @@ public class MainActivity extends Activity {
                     }
                 }
             }
-            
+
             filePathCallback.onReceiveValue(results);
             filePathCallback = null;
         }
     }
-    
+
     @Override
     public void onBackPressed() {
         if (webView.canGoBack()) {
