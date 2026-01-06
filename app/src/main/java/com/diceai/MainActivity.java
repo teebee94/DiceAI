@@ -122,6 +122,31 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 100) {
+            boolean allGranted = true;
+            for (int result : grantResults) {
+                if (result != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+
+            if (allGranted) {
+                // Permissions granted - reload the page to ensure everything works
+                webView.reload();
+            } else {
+                // Some permissions denied - show a message
+                android.widget.Toast.makeText(this,
+                        "Photo permissions are required to upload images from gallery",
+                        android.widget.Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    @Override
     public void onBackPressed() {
         if (webView.canGoBack()) {
             webView.goBack();
