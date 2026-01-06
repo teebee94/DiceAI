@@ -30,30 +30,56 @@
         init() {
             const uploadZone = document.getElementById('uploadZone');
             const extractedNumbers = document.getElementById('extractedNumbers');
+            const fileInput = document.getElementById('fileInput');
 
-            if (!uploadZone) return;
+            if (!uploadZone || !fileInput) return;
 
-            // Add Android-specific help text
-            const androidHint = document.createElement('div');
-            androidHint.style.cssText = `
-                margin-top: var(--space-sm);
-                padding: var(--space-sm);
-                background: rgba(139, 92, 246, 0.1);
-                border-radius: var(--radius-sm);
-                color: var(--color-secondary);
-                font-size: var(--font-size-xs);
-                text-align: center;
+            // Replace the upload hint text with Android-specific instructions
+            const uploadText = uploadZone.querySelector('.upload-text');
+            const uploadHint = uploadZone.querySelector('.upload-hint');
+
+            if (uploadText) {
+                uploadText.textContent = '📱 Android Gallery Upload';
+                uploadText.style.fontSize = 'var(--font-size-lg)';
+                uploadText.style.fontWeight = '700';
+                uploadText.style.color = 'var(--color-primary)';
+            }
+
+            if (uploadHint) {
+                uploadHint.textContent = 'Tap the button below to select screenshots from your gallery';
+                uploadHint.style.fontSize = 'var(--font-size-sm)';
+            }
+
+            // Create a prominent "Select Photos" button
+            const selectButton = document.createElement('button');
+            selectButton.className = 'btn btn-primary';
+            selectButton.style.cssText = `
+                width: 100%;
+                margin-top: var(--space-md);
+                padding: var(--space-md);
+                font-size: var(--font-size-base);
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: var(--space-sm);
             `;
-            androidHint.innerHTML = '📱 Android Mode: Tap to select images, then manually enter visible data';
-            uploadZone.parentNode.insertBefore(androidHint, uploadZone);
+            selectButton.innerHTML = '📸 Select Photos from Gallery';
+            selectButton.onclick = (e) => {
+                e.stopPropagation();
+                fileInput.click();
+            };
+
+            // Add the button to the upload zone
+            uploadZone.appendChild(selectButton);
+
+            // Keep the upload zone clickable as backup
+            uploadZone.style.cursor = 'pointer';
 
             // Listen for file selection
-            const fileInput = document.getElementById('fileInput');
-            if (fileInput) {
-                fileInput.addEventListener('change', (e) => {
-                    this.handleAndroidUpload(e.target.files, extractedNumbers);
-                });
-            }
+            fileInput.addEventListener('change', (e) => {
+                this.handleAndroidUpload(e.target.files, extractedNumbers);
+            });
         }
 
         handleAndroidUpload(files, container) {
