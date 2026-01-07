@@ -174,11 +174,6 @@
             <input type="file" id="fileInput" accept="image/png,image/jpeg,image/jpg,image/webp" multiple
               style="display: none;">
           </div>
-          <!-- Big obvious button for mobile -->
-          <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()"
-            style="width: 100%; margin-top: var(--space-md); padding: var(--space-md); font-size: var(--font-size-base); font-weight: 700;">
-            📸 Select Photos from Gallery
-          </button>
           <div id="uploadProgress" style="display: none;">
             <div class="progress-bar">
               <div class="progress-fill" id="uploadProgressFill" style="width: 0%"></div>
@@ -316,7 +311,7 @@
   <script src="prediction-engine.js"></script>
   <script src="learning-engine.js"></script>
   <script src="image-analyzer.js"></script>
-  <script src="android-fallback.js"></script>
+  <script src="ui-components.js"></script>
   <script src="app.js"></script>
 </body>
 
