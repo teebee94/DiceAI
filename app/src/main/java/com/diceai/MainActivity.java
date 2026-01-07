@@ -12,12 +12,17 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.webkit.ConsoleMessage;
 import android.util.Log;
+import android.widget.Toast;
+import java.io.File;
+import java.io.IOException;
 
 public class MainActivity extends Activity {
 
     private WebView webView;
     private static final int FILE_CHOOSER_REQUEST = 1;
+    private static final int CAMERA_REQUEST = 2;
     private ValueCallback<Uri[]> filePathCallback;
+    private Uri cameraImageUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,19 +61,57 @@ public class MainActivity extends Activity {
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback,
                     FileChooserParams fileChooserParams) {
+
+                Log.d("DiceAI", "onShowFileChooser called");
+
+                // Cancel any existing callback
+                if (MainActivity.this.filePathCallback != null) {
+                    MainActivity.this.filePathCallback.onReceiveValue(null);
+                }
+
                 MainActivity.this.filePathCallback = filePathCallback;
 
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("image/*");
-                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                try {
+                    // Create intent with multiple options
+                    Intent galleryIntent = new Intent(Intent.ACTION_PICK);
+                    galleryIntent.setType("image/*");
+                    galleryIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
 
-                startActivityForResult(Intent.createChooser(intent, "Select Images"), FILE_CHOOSER_REQUEST);
-                return true;
+                    // Create camera intent as option
+                    Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+                    // Create file for camera photo
+                    File photoFile = createImageFile();
+                    if (photoFile != null) {
+                        cameraImageUri = Uri.fromFile(photoFile);
+                        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, cameraImageUri);
+                    }
+
+                    // Create chooser with both options
+                    Intent chooserIntent = Intent.createChooser(galleryIntent, "Select Images or Take Photo");
+                    chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] { cameraIntent });
+
+                    startActivityForResult(chooserIntent, FILE_CHOOSER_REQUEST);
+
+                    Log.d("DiceAI", "File chooser intent started");
+                    return true;
+
+                } catch (Exception e) {
+                    Log.e("DiceAI", "Error opening file chooser: " + e.getMessage());
+                    Toast.makeText(MainActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+
+                    if (MainActivity.this.filePathCallback != null) {
+                        MainActivity.this.filePathCallback.onReceiveValue(null);
+                        MainActivity.this.filePathCallback = null;
+                    }
+                    return false;
+                }
             }
 
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                Log.d("WebView", consoleMessage.message());
+                Log.d("WebView", consoleMessage.message() + " -- Line: " + consoleMessage.lineNumber() +
+                        " of " + consoleMessage.sourceId());
                 return true;
             }
         });
@@ -78,6 +121,17 @@ public class MainActivity extends Activity {
 
         // Request permissions for photo access
         requestPermissions();
+    }
+
+    private File createImageFile() {
+        try {
+            String imageFileName = "DICEAI_" + System.currentTimeMillis();
+            File storageDir = getExternalFilesDir(null);
+            return File.createTempFile(imageFileName, ".jpg", storageDir);
+        } catch (IOException e) {
+            Log.e("DiceAI", "Error creating image file: " + e.getMessage());
+            return null;
+        }
     }
 
     private void requestPermissions() {
@@ -98,26 +152,45 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Log.d("DiceAI", "onActivityResult - requestCode: " + requestCode + ", resultCode: " + resultCode);
+
         if (requestCode == FILE_CHOOSER_REQUEST) {
-            if (filePathCallback == null)
+            if (filePathCallback == null) {
+                Log.e("DiceAI", "filePathCallback is null!");
                 return;
+            }
 
             Uri[] results = null;
-            if (resultCode == Activity.RESULT_OK && data != null) {
-                String dataString = data.getDataString();
-                if (dataString != null) {
-                    results = new Uri[] { Uri.parse(dataString) };
-                } else if (data.getClipData() != null) {
-                    int count = data.getClipData().getItemCount();
-                    results = new Uri[count];
-                    for (int i = 0; i < count; i++) {
-                        results[i] = data.getClipData().getItemAt(i).getUri();
+
+            if (resultCode == Activity.RESULT_OK) {
+                if (data != null) {
+                    // Gallery selection
+                    String dataString = data.getDataString();
+                    if (dataString != null) {
+                        results = new Uri[] { Uri.parse(dataString) };
+                        Log.d("DiceAI", "Single image selected from gallery");
+                    } else if (data.getClipData() != null) {
+                        int count = data.getClipData().getItemCount();
+                        results = new Uri[count];
+                        for (int i = 0; i < count; i++) {
+                            results[i] = data.getClipData().getItemAt(i).getUri();
+                        }
+                        Log.d("DiceAI", "Multiple images selected: " + count);
                     }
+                } else if (cameraImageUri != null) {
+                    // Camera photo
+                    results = new Uri[] { cameraImageUri };
+                    Log.d("DiceAI", "Photo captured from camera");
                 }
+            } else {
+                Log.d("DiceAI", "File selection cancelled");
             }
 
             filePathCallback.onReceiveValue(results);
             filePathCallback = null;
+            cameraImageUri = null;
         }
     }
 
@@ -135,13 +208,16 @@ public class MainActivity extends Activity {
             }
 
             if (allGranted) {
-                // Permissions granted - reload the page to ensure everything works
+                Log.d("DiceAI", "All permissions granted");
+                // Permissions granted - reload the page
                 webView.reload();
+                Toast.makeText(this, "✅ Permissions granted! Tap 'Select Photos' to upload.",
+                        Toast.LENGTH_LONG).show();
             } else {
-                // Some permissions denied - show a message
-                android.widget.Toast.makeText(this,
-                        "Photo permissions are required to upload images from gallery",
-                        android.widget.Toast.LENGTH_LONG).show();
+                Log.d("DiceAI", "Some permissions denied");
+                Toast.makeText(this,
+                        "⚠️ Photo permissions are required to upload images from gallery",
+                        Toast.LENGTH_LONG).show();
             }
         }
     }
