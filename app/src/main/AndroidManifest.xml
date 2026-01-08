@@ -2,23 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.diceai">
 
-    <!-- Permissions for different Android versions -->
-    <!-- Android 13+ (API 33+) -->
+    <!-- Permissions -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    
-    <!-- Android 6-12 (API 23-32) -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
-    
-    <!-- Camera permission (all versions) -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.CAMERA" />
-    
-    <!-- Internet for Tesseract.js -->
     <uses-permission android:name="android.permission.INTERNET" />
-    
-    <!-- Network state -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
@@ -29,19 +18,27 @@
         android:usesCleartextTraffic="true"
         android:requestLegacyExternalStorage="true">
         
+        <!-- Native Kotlin App (Primary) -->
         <activity
-            android:name=".MainActivity"
+            android:name=".NativeMainActivity"
             android:exported="true"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:hardwareAccelerated="true"
-            android:windowSoftInputMode="adjustResize">
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <!-- WebView App (Fallback) -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+        </activity>
 
-        <!-- File Provider for camera photos on Android 7+ -->
+        <!-- File Provider -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
