@@ -6,8 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>🎲 DiceAI - Complete</title>
+    <title>🎲 DiceAI</title>
+
+    <!-- Inline Tesseract.js for offline support -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -27,30 +30,29 @@
         .header {
             text-align: center;
             margin-bottom: 16px;
-            padding: 12px 0;
         }
 
         .header h1 {
-            font-size: 26px;
+            font-size: 24px;
             margin-bottom: 4px;
         }
 
         .header p {
             color: #a78bfa;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .card {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(20px);
-            border-radius: 14px;
-            padding: 14px;
+            border-radius: 12px;
+            padding: 12px;
             margin-bottom: 10px;
             border: 1px solid rgba(255, 255, 255, 0.15);
         }
 
         .card-title {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
             margin-bottom: 10px;
             color: #c4b5fd;
@@ -58,14 +60,14 @@
 
         .prediction-box {
             text-align: center;
-            padding: 24px;
+            padding: 20px;
             background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(99, 102, 241, 0.25));
-            border-radius: 14px;
+            border-radius: 12px;
             margin: 10px 0;
         }
 
         .prediction-number {
-            font-size: 68px;
+            font-size: 64px;
             font-weight: 900;
             margin-bottom: 8px;
         }
@@ -75,13 +77,13 @@
             gap: 6px;
             justify-content: center;
             flex-wrap: wrap;
-            margin-top: 12px;
+            margin-top: 10px;
         }
 
         .badge {
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
         }
@@ -103,12 +105,12 @@
         }
 
         .input-group {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .input-group label {
             display: block;
-            font-size: 12px;
+            font-size: 11px;
             margin-bottom: 4px;
             color: #c4b5fd;
             font-weight: 600;
@@ -119,28 +121,27 @@
             width: 100%;
             padding: 10px;
             border: 2px solid rgba(139, 92, 246, 0.3);
-            border-radius: 10px;
+            border-radius: 8px;
             background: rgba(255, 255, 255, 0.05);
             color: #fff;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .input-group textarea {
-            min-height: 80px;
+            min-height: 70px;
             font-family: monospace;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .btn {
             width: 100%;
-            padding: 12px;
+            padding: 11px;
             border: none;
-            border-radius: 10px;
-            font-size: 14px;
+            border-radius: 8px;
+            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .btn-primary {
@@ -163,16 +164,16 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 6px;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
         .quick-add-btn {
-            padding: 12px;
+            padding: 10px;
             background: rgba(139, 92, 246, 0.15);
             border: 1px solid rgba(139, 92, 246, 0.3);
-            border-radius: 8px;
+            border-radius: 6px;
             color: #fff;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
             cursor: pointer;
         }
@@ -181,24 +182,24 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 8px;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
         .stat-card {
             background: rgba(255, 255, 255, 0.05);
             padding: 10px;
-            border-radius: 10px;
+            border-radius: 8px;
             text-align: center;
         }
 
         .stat-value {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 900;
             margin-bottom: 4px;
         }
 
         .stat-label {
-            font-size: 10px;
+            font-size: 9px;
             color: #a78bfa;
             text-transform: uppercase;
         }
@@ -206,14 +207,14 @@
         .history-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 11px;
+            font-size: 10px;
         }
 
         .history-table th {
             background: rgba(139, 92, 246, 0.2);
             padding: 6px 4px;
             text-align: left;
-            font-size: 10px;
+            font-size: 9px;
         }
 
         .history-table td {
@@ -222,9 +223,9 @@
         }
 
         .history-scroll {
-            max-height: 250px;
+            max-height: 220px;
             overflow-y: auto;
-            border-radius: 8px;
+            border-radius: 6px;
         }
 
         .toast {
@@ -234,32 +235,41 @@
             transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.95);
             color: #fff;
-            padding: 10px 18px;
-            border-radius: 20px;
-            font-size: 12px;
+            padding: 10px 16px;
+            border-radius: 16px;
+            font-size: 11px;
             z-index: 1000;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
         }
 
         .upload-zone {
             border: 2px dashed rgba(139, 92, 246, 0.5);
-            border-radius: 12px;
-            padding: 24px;
+            border-radius: 10px;
+            padding: 20px;
             text-align: center;
             cursor: pointer;
             background: rgba(139, 92, 246, 0.05);
-            margin: 10px 0;
-        }
-
-        .upload-zone:hover {
-            background: rgba(139, 92, 246, 0.1);
+            margin: 8px 0;
         }
 
         .progress-bar {
-            height: 6px;
+            height: 4px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
+            border-radius: 2px;
             overflow: hidden;
-            margin: 10px 0;
+            margin: 8px 0;
         }
 
         .progress-fill {
@@ -269,27 +279,32 @@
         }
 
         .extracted-results {
-            margin-top: 10px;
-            padding: 10px;
+            margin-top: 8px;
+            padding: 8px;
             background: rgba(16, 185, 129, 0.1);
-            border-radius: 8px;
+            border-radius: 6px;
             border: 1px solid rgba(16, 185, 129, 0.3);
+            font-size: 10px;
         }
 
         #fileInput,
         #importInput {
             display: none;
         }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
     </style>
 </head>
 
 <body>
     <div class="header">
-        <h1>🎲 DiceAI Complete</h1>
-        <p>Full-Featured AI Prediction System</p>
+        <h1>🎲 DiceAI</h1>
+        <p>AI-Powered Predictions • Offline Support</p>
     </div>
 
-    <!-- Prediction -->
     <div class="card">
         <div class="card-title">🔮 AI Prediction</div>
         <div class="prediction-box">
@@ -299,37 +314,34 @@
         <button class="btn btn-primary" onclick="app.generatePrediction()">Generate Prediction</button>
     </div>
 
-    <!-- Photo Upload -->
     <div class="card">
         <div class="card-title">📸 Image Scanning (OCR)</div>
         <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
-            <div style="font-size: 40px; margin-bottom: 8px;">📷</div>
-            <div style="font-size: 14px; margin-bottom: 4px;">Upload Screenshots</div>
-            <div style="font-size: 11px; color: #a78bfa;">Tap to select images</div>
+            <div style="font-size: 36px; margin-bottom: 6px;">📷</div>
+            <div style="font-size: 12px; margin-bottom: 4px;">Upload Screenshots</div>
+            <div style="font-size: 10px; color: #a78bfa;">Works offline • Tap to select</div>
         </div>
         <input type="file" id="fileInput" accept="image/*" multiple onchange="app.handleImageUpload(event)">
         <div id="ocrProgress" style="display:none;">
             <div class="progress-bar">
                 <div class="progress-fill" id="ocrProgressBar"></div>
             </div>
-            <div id="ocrStatus" style="font-size: 11px; text-align: center; color: #a78bfa;"></div>
+            <div id="ocrStatus" style="font-size: 10px; text-align: center; color: #a78bfa; margin-top: 4px;"></div>
         </div>
         <div id="extractedResults"></div>
     </div>
 
-    <!-- Quick Add -->
     <div class="card">
         <div class="card-title">⚡ Quick Entry</div>
         <div class="input-group">
-            <label>Period ID (Optional)</label>
-            <input type="text" id="periodId" placeholder="2025010812345678">
+            <label>Period ID</label>
+            <input type="text" id="periodId" placeholder="Optional">
         </div>
         <div class="input-group">
-            <label>Sum (3-18) *</label>
-            <input type="number" id="sumInput" min="3" max="18" placeholder="Enter sum">
+            <label>Sum (3-18)</label>
+            <input type="number" id="sumInput" min="3" max="18" placeholder="Enter">
         </div>
         <button class="btn btn-success" onclick="app.addResult()">✅ Add</button>
-
         <div class="quick-add-grid">
             <button class="quick-add-btn" onclick="app.quickAdd(3)">3</button>
             <button class="quick-add-btn" onclick="app.quickAdd(6)">6</button>
@@ -340,30 +352,26 @@
         </div>
     </div>
 
-    <!-- Bulk Import -->
     <div class="card">
-        <div class="card-title">📊 Bulk Import</div>
+        <div class="card-title">📊 Bulk</div>
         <div class="input-group">
             <label>Paste Data (Period,Sum)</label>
-            <textarea id="bulkData" placeholder="2025010812345678,13
-2025010812345679,11"></textarea>
+            <textarea id="bulkData" placeholder="2025010812345678,13&#10;2025010812345679,11"></textarea>
         </div>
-        <button class="btn btn-primary" onclick="app.bulkImport()">Import All</button>
+        <button class="btn btn-primary" onclick="app.bulkImport()">Import</button>
     </div>
 
-    <!-- Data Management -->
     <div class="card">
-        <div class="card-title">💾 Data Management</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div class="card-title">💾 Data</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
             <button class="btn btn-outline" onclick="app.exportData()">📤 Export</button>
             <button class="btn btn-outline" onclick="document.getElementById('importInput').click()">📥 Import</button>
         </div>
         <input type="file" id="importInput" accept=".json" onchange="app.importData(event)">
     </div>
 
-    <!-- Statistics -->
     <div class="card">
-        <div class="card-title">📊 Statistics</div>
+        <div class="card-title">📊 Stats</div>
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-value" id="statTotal">0</div>
@@ -379,14 +387,13 @@
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="statAvg">-</div>
-                <div class="stat-label">Average</div>
+                <div class="stat-label">Avg</div>
             </div>
         </div>
     </div>
 
-    <!-- History -->
     <div class="card">
-        <div class="card-title">📜 History (Last 50)</div>
+        <div class="card-title">📜 History</div>
         <div class="history-scroll">
             <table class="history-table">
                 <thead>
@@ -401,7 +408,7 @@
                 <tbody id="historyBody"></tbody>
             </table>
         </div>
-        <button class="btn btn-outline" onclick="app.clearAll()" style="margin-top: 10px;">Clear All</button>
+        <button class="btn btn-outline" onclick="app.clearAll()" style="margin-top: 8px;">Clear</button>
     </div>
 
     <script>
@@ -409,17 +416,27 @@
             constructor() {
                 this.results = JSON.parse(localStorage.getItem('diceResults') || '[]');
                 this.worker = null;
+                this.initWorker();
                 this.updateUI();
+            }
+
+            async initWorker() {
+                try {
+                    if (typeof Tesseract !== 'undefined') {
+                        this.worker = await Tesseract.createWorker();
+                        await this.worker.loadLanguage('eng');
+                        await this.worker.initialize('eng');
+                        console.log('OCR ready (offline)');
+                    }
+                } catch (e) {
+                    console.log('OCR init error:', e);
+                }
             }
 
             async addResult() {
                 const period = document.getElementById('periodId').value.trim();
                 const sum = parseInt(document.getElementById('sumInput').value);
-
-                if (!sum || sum < 3 || sum > 18) {
-                    this.showToast('⚠️ Enter sum 3-18');
-                    return;
-                }
+                if (!sum || sum < 3 || sum > 18) return this.showToast('⚠️ Sum 3-18');
 
                 this.results.push({
                     period: period || '-',
@@ -432,7 +449,7 @@
                 this.saveData();
                 this.updateUI();
                 document.getElementById('sumInput').value = '';
-                this.showToast(`✅ Added: ${sum}`);
+                this.showToast(`✅ ${sum}`);
             }
 
             quickAdd(sum) {
@@ -442,77 +459,63 @@
 
             bulkImport() {
                 const bulkData = document.getElementById('bulkData').value.trim();
-                if (!bulkData) return this.showToast('⚠️ Paste data first');
+                if (!bulkData) return this.showToast('⚠️ Paste data');
 
-                const lines = bulkData.split('\n');
                 let imported = 0;
-
-                lines.forEach(line => {
-                    const parts = line.split(',');
-                    if (parts.length >= 2) {
-                        const period = parts[0].trim();
-                        const sum = parseInt(parts[1].trim());
-
-                        if (sum >= 3 && sum <= 18) {
-                            this.results.push({
-                                period: period,
-                                sum: sum,
-                                isBig: sum >= 11,
-                                isEven: sum % 2 === 0,
-                                timestamp: Date.now()
-                            });
-                            imported++;
-                        }
+                bulkData.split('\n').forEach(line => {
+                    const [period, sum] = line.split(',').map(s => s.trim());
+                    const sumNum = parseInt(sum);
+                    if (sumNum >= 3 && sumNum <= 18) {
+                        this.results.push({
+                            period: period || '-',
+                            sum: sumNum,
+                            isBig: sumNum >= 11,
+                            isEven: sumNum % 2 === 0,
+                            timestamp: Date.now()
+                        });
+                        imported++;
                     }
                 });
 
                 this.saveData();
                 this.updateUI();
                 document.getElementById('bulkData').value = '';
-                this.showToast(`✅ Imported ${imported} results`);
+                this.showToast(`✅ ${imported} imported`);
             }
 
             async handleImageUpload(event) {
                 const files = Array.from(event.target.files);
-                if (files.length === 0) return;
+                if (!files.length) return;
 
                 document.getElementById('ocrProgress').style.display = 'block';
-                document.getElementById('ocrStatus').textContent = 'Initializing OCR...';
                 document.getElementById('extractedResults').innerHTML = '';
-
                 let allExtracted = [];
 
                 for (let i = 0; i < files.length; i++) {
                     document.getElementById('ocrProgressBar').style.width = ((i / files.length) * 100) + '%';
-                    document.getElementById('ocrStatus').textContent = `Processing ${i + 1}/${files.length}...`;
+                    document.getElementById('ocrStatus').textContent = `${i + 1}/${files.length}`;
 
                     try {
-                        const { data: { text } } = await Tesseract.recognize(files[i], 'eng');
+                        const { data: { text } } = await this.worker.recognize(files[i]);
                         const extracted = this.parseOCR(text);
                         allExtracted.push(...extracted);
-                    } catch (error) {
-                        console.error('OCR error:', error);
+                    } catch (e) {
+                        console.error('OCR error:', e);
                     }
                 }
 
                 document.getElementById('ocrProgress').style.display = 'none';
-                document.getElementById('ocrProgressBar').style.width = '0%';
-
-                if (allExtracted.length > 0) {
-                    this.displayExtractedResults(allExtracted);
-                } else {
-                    this.showToast('❌ No results found in images');
-                }
+                if (allExtracted.length > 0) this.displayExtractedResults(allExtracted);
+                else this.showToast('❌ No results');
+                event.target.value = '';
             }
 
             parseOCR(text) {
                 const results = [];
                 const numbers = text.match(/\d+/g) || [];
-
                 for (let i = 0; i < numbers.length - 1; i++) {
                     const num = numbers[i];
                     const nextNum = numbers[i + 1];
-
                     if (num.length === 16 && num.startsWith('202')) {
                         const sum = parseInt(nextNum);
                         if (sum >= 3 && sum <= 18) {
@@ -521,20 +524,15 @@
                         }
                     }
                 }
-
                 return results;
             }
 
             displayExtractedResults(extracted) {
-                const container = document.getElementById('extractedResults');
-                container.className = 'extracted-results';
-                container.innerHTML = `
-                    <div style="font-weight: 600; margin-bottom: 8px;">✅ Found ${extracted.length} results</div>
-                    <div style="font-size: 11px; margin-bottom: 8px;">
-                        ${extracted.map(r => `${r.period}: ${r.sum}`).join(', ').substring(0, 100)}...
-                    </div>
-                    <button class="btn btn-success" onclick="app.importExtracted(${JSON.stringify(extracted).replace(/"/g, '&quot;')})">
-                        Import All ${extracted.length}
+                document.getElementById('extractedResults').className = 'extracted-results';
+                document.getElementById('extractedResults').innerHTML = `
+                    <div style="font-weight: 600; margin-bottom: 6px;">✅ ${extracted.length} results</div>
+                    <button class="btn btn-success" style="margin-top: 6px; padding: 8px;" onclick="app.importExtracted(${JSON.stringify(extracted).replace(/"/g, '&quot;')})">
+                        Import All
                     </button>
                 `;
             }
@@ -549,17 +547,14 @@
                         timestamp: Date.now()
                     });
                 });
-
                 this.saveData();
                 this.updateUI();
                 document.getElementById('extractedResults').innerHTML = '';
-                this.showToast(`✅ Imported ${extracted.length} results`);
+                this.showToast(`✅ ${extracted.length} imported`);
             }
 
             generatePrediction() {
-                if (this.results.length < 10) {
-                    return this.showToast('⚠️ Need 10+ results');
-                }
+                if (this.results.length < 10) return this.showToast('⚠️ Need 10+');
 
                 const recent = this.results.slice(-20);
                 const freq = {};
@@ -567,40 +562,29 @@
                 const predicted = parseInt(Object.keys(freq).reduce((a, b) => freq[a] > freq[b] ? a : b));
 
                 document.getElementById('predNum').textContent = predicted;
-
                 const isBig = predicted >= 11;
                 const isEven = predicted % 2 === 0;
-
                 document.getElementById('predBadges').innerHTML = `
                     <span class="badge ${isBig ? 'badge-big' : 'badge-small'}">${isBig ? 'BIG' : 'SMALL'}</span>
                     <span class="badge ${isEven ? 'badge-even' : 'badge-odd'}">${isEven ? 'EVEN' : 'ODD'}</span>
                 `;
-
-                this.showToast(`🎯 Prediction: ${predicted}`);
+                this.showToast(`🎯 ${predicted}`);
             }
 
             exportData() {
-                const data = {
-                    results: this.results,
-                    exported: new Date().toISOString(),
-                    version: '1.0'
-                };
-
-                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const blob = new Blob([JSON.stringify({ results: this.results, version: '1.0' }, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `diceai-export-${Date.now()}.json`;
+                a.download = `diceai-${Date.now()}.json`;
                 a.click();
                 URL.revokeObjectURL(url);
-
-                this.showToast('✅ Exported data');
+                this.showToast('✅ Exported');
             }
 
             importData(event) {
                 const file = event.target.files[0];
                 if (!file) return;
-
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     try {
@@ -608,9 +592,9 @@
                         this.results = data.results || data.history || [];
                         this.saveData();
                         this.updateUI();
-                        this.showToast('✅ Imported data');
-                    } catch (error) {
-                        this.showToast('❌ Import failed');
+                        this.showToast('✅ Imported');
+                    } catch {
+                        this.showToast('❌ Failed');
                     }
                 };
                 reader.readAsText(file);
@@ -628,23 +612,23 @@
                 document.getElementById('statAvg').textContent = avg;
 
                 const tbody = document.getElementById('historyBody');
-                if (total === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: #a78bfa;">No data yet</td></tr>';
+                if (!total) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 16px; color: #a78bfa;">No data</td></tr>';
                 } else {
                     tbody.innerHTML = this.results.slice().reverse().slice(0, 50).map((r, i) => `
                         <tr>
                             <td>${total - i}</td>
-                            <td style="font-size: 10px;">${r.period.substring(8) || '-'}</td>
+                            <td style="font-size: 9px;">${r.period.substring(8) || '-'}</td>
                             <td style="font-weight: 700;">${r.sum}</td>
-                            <td><span class="badge ${r.isBig ? 'badge-big' : 'badge-small'}" style="font-size: 9px; padding: 3px 6px;">${r.isBig ? 'BIG' : 'SMALL'}</span></td>
-                            <td><span class="badge ${r.isEven ? 'badge-even' : 'badge-odd'}" style="font-size: 9px; padding: 3px 6px;">${r.isEven ? 'EVEN' : 'ODD'}</span></td>
+                            <td><span class="badge ${r.isBig ? 'badge-big' : 'badge-small'}" style="font-size: 8px; padding: 2px 6px;">${r.isBig ? 'BIG' : 'SMALL'}</span></td>
+                            <td><span class="badge ${r.isEven ? 'badge-even' : 'badge-odd'}" style="font-size: 8px; padding: 2px 6px;">${r.isEven ? 'EVEN' : 'ODD'}</span></td>
                         </tr>
                     `).join('');
                 }
             }
 
             clearAll() {
-                if (confirm('Clear all data?')) {
+                if (confirm('Clear all?')) {
                     this.results = [];
                     this.saveData();
                     this.updateUI();
@@ -663,7 +647,7 @@
                 toast.className = 'toast';
                 toast.textContent = message;
                 document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 2500);
+                setTimeout(() => toast.remove(), 2000);
             }
         }
 
