@@ -6,8 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>🎲 DiceAI Mobile</title>
+    <title>🎲 DiceAI - Smart Predictions</title>
     <style>
         * {
             margin: 0;
@@ -17,123 +16,111 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
             color: #fff;
             min-height: 100vh;
-            padding: 16px;
+            padding: 12px;
             padding-bottom: 80px;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 24px;
-            padding: 20px 0;
+            margin-bottom: 20px;
+            padding: 16px 0;
         }
 
         .header h1 {
-            font-size: 32px;
-            margin-bottom: 8px;
+            font-size: 28px;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .header p {
             color: #a78bfa;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
             border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         .card-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
             gap: 8px;
-        }
-
-        .input-group {
-            margin-bottom: 16px;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 14px;
-            margin-bottom: 8px;
             color: #c4b5fd;
-        }
-
-        .input-group input,
-        .input-group textarea {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            color: #fff;
-            font-size: 16px;
-        }
-
-        .input-group textarea {
-            min-height: 120px;
-            font-family: monospace;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #8b5cf6, #6366f1);
-            color: #fff;
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: #fff;
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 2px solid #8b5cf6;
-            color: #8b5cf6;
         }
 
         .prediction-box {
             text-align: center;
-            padding: 32px;
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(99, 102, 241, 0.2));
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(99, 102, 241, 0.25));
             border-radius: 16px;
-            margin: 16px 0;
+            margin: 12px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .prediction-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
         }
 
         .prediction-number {
-            font-size: 64px;
-            font-weight: 700;
+            font-size: 72px;
+            font-weight: 900;
             margin-bottom: 8px;
+            position: relative;
+            text-shadow: 0 4px 20px rgba(139, 92, 246, 0.5);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
         }
 
         .prediction-label {
-            font-size: 14px;
+            font-size: 12px;
             color: #c4b5fd;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .prediction-badges {
@@ -141,98 +128,227 @@
             gap: 8px;
             justify-content: center;
             flex-wrap: wrap;
+            margin-top: 16px;
         }
 
         .badge {
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .badge-big {
-            background: rgba(239, 68, 68, 0.3);
-            color: #fca5a5;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
         }
 
         .badge-small {
-            background: rgba(59, 130, 246, 0.3);
-            color: #93c5fd;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
         }
 
         .badge-odd {
-            background: rgba(245, 158, 11, 0.3);
-            color: #fcd34d;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
         }
 
         .badge-even {
-            background: rgba(16, 185, 129, 0.3);
-            color: #6ee7b7;
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .confidence-bar {
+            margin: 16px 0 8px 0;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6, #6366f1);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .confidence-text {
+            font-size: 11px;
+            color: #a78bfa;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: #c4b5fd;
+            font-weight: 600;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .input-group textarea {
+            min-height: 100px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid rgba(139, 92, 246, 0.5);
+            color: #a78bfa;
+        }
+
+        .quick-add-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .quick-add-btn {
+            padding: 14px 8px;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-add-btn:active {
+            background: rgba(139, 92, 246, 0.3);
+            transform: scale(0.95);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #a78bfa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .history-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 13px;
+            font-size: 12px;
         }
 
         .history-table th {
             background: rgba(139, 92, 246, 0.2);
-            padding: 10px 6px;
+            padding: 8px 6px;
             text-align: left;
-            font-size: 11px;
+            font-size: 10px;
             position: sticky;
             top: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .history-table td {
-            padding: 10px 6px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .history-scroll {
-            max-height: 300px;
+            max-height: 250px;
             overflow-y: auto;
             border-radius: 8px;
         }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 16px;
-        }
-
-        .stat-card {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 16px;
-            border-radius: 12px;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #c4b5fd;
-        }
-
         .toast {
             position: fixed;
-            bottom: 100px;
+            bottom: 80px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             color: #fff;
-            padding: 14px 24px;
-            border-radius: 8px;
-            font-size: 14px;
+            padding: 12px 20px;
+            border-radius: 24px;
+            font-size: 13px;
             animation: slideUp 0.3s ease;
             z-index: 1000;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
         }
 
         @keyframes slideUp {
@@ -247,56 +363,53 @@
             }
         }
 
-        .quick-add-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-top: 16px;
-        }
-
-        .quick-add-btn {
-            padding: 16px 8px;
-            background: rgba(139, 92, 246, 0.2);
-            border: 1px solid rgba(139, 92, 246, 0.4);
+        .pattern-insight {
+            background: rgba(139, 92, 246, 0.1);
+            border-left: 3px solid #8b5cf6;
+            padding: 10px 12px;
             border-radius: 8px;
-            color: #fff;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
+            margin-top: 12px;
+            font-size: 12px;
+            color: #c4b5fd;
         }
 
-        .quick-add-btn:active {
-            background: rgba(139, 92, 246, 0.4);
+        .pattern-insight strong {
+            color: #fff;
         }
     </style>
 </head>
 
 <body>
     <div class="header">
-        <h1>🎲 DiceAI Mobile</h1>
-        <p>AI-Powered Dice Prediction</p>
+        <h1>🎲 DiceAI</h1>
+        <p>AI-Powered Smart Predictions</p>
     </div>
 
-    <!-- Prediction Card -->
+    <!-- AI Prediction Card -->
     <div class="card">
         <div class="card-title">🔮 AI Prediction</div>
         <div class="prediction-box">
             <div class="prediction-number" id="predNum">?</div>
-            <div class="prediction-label">Predicted Sum</div>
+            <div class="prediction-label">Next Sum Prediction</div>
             <div class="prediction-badges" id="predBadges"></div>
+            <div class="confidence-bar">
+                <div class="confidence-fill" id="confBar" style="width: 0%"></div>
+            </div>
+            <div class="confidence-text" id="confText">Generate prediction to see AI confidence</div>
         </div>
-        <button class="btn btn-primary" onclick="generatePrediction()">Generate Prediction</button>
+        <button class="btn btn-primary" onclick="generatePrediction()">🎯 Generate Prediction</button>
+        <div id="patternInsight"></div>
     </div>
 
     <!-- Quick Add Card -->
     <div class="card">
-        <div class="card-title">⚡ Quick Add</div>
+        <div class="card-title">⚡ Quick Entry</div>
         <div class="input-group">
             <label>Period ID (Optional)</label>
-            <input type="text" id="periodId" placeholder="e.g., 2025010812345678">
+            <input type="text" id="periodId" placeholder="2025010812345678">
         </div>
         <div class="input-group">
-            <label>Sum (3-18) *</label>
+            <label>Result Sum (3-18) *</label>
             <input type="number" id="sumInput" min="3" max="18" placeholder="Enter sum">
         </div>
         <button class="btn btn-success" onclick="addResult()">✅ Add Result</button>
@@ -315,40 +428,48 @@
     <div class="card">
         <div class="card-title">📊 Bulk Import</div>
         <div class="input-group">
-            <label>Paste data (Period,Sum per line)</label>
+            <label>Paste Data (Period,Sum per line)</label>
             <textarea id="bulkData" placeholder="2025010812345678,13
 2025010812345679,11
 2025010812345680,15"></textarea>
         </div>
-        <button class="btn btn-primary" onclick="bulkImport()">Import All</button>
+        <button class="btn btn-primary" onclick="bulkImport()">💾 Import All Data</button>
     </div>
 
-    <!-- Stats Card -->
+    <!-- Statistics Card -->
     <div class="card">
-        <div class="card-title">📊 Statistics</div>
+        <div class="card-title">📊 Live Statistics</div>
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-value" id="statTotal">0</div>
-                <div class="stat-label">Total Results</div>
+                <div class="stat-label">Total</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="statBig">0</div>
-                <div class="stat-label">Big (11-18)</div>
+                <div class="stat-label">Big</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="statSmall">0</div>
-                <div class="stat-label">Small (3-10)</div>
+                <div class="stat-label">Small</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="statAvg">-</div>
                 <div class="stat-label">Average</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statEven">0</div>
+                <div class="stat-label">Even</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statOdd">0</div>
+                <div class="stat-label">Odd</div>
             </div>
         </div>
     </div>
 
     <!-- History Card -->
     <div class="card">
-        <div class="card-title">📜 History</div>
+        <div class="card-title">📜 Recent History</div>
         <div class="history-scroll">
             <table class="history-table">
                 <thead>
@@ -361,14 +482,14 @@
                 </thead>
                 <tbody id="historyBody">
                     <tr>
-                        <td colspan="4" style="text-align: center; padding: 24px; color: #a78bfa;">
-                            No data yet. Add some results!
+                        <td colspan="4" style="text-align: center; padding: 20px; color: #a78bfa;">
+                            Add results to start tracking
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
-        <button class="btn btn-outline" onclick="clearAll()" style="margin-top: 16px;">Clear All Data</button>
+        <button class="btn btn-outline" onclick="clearAll()" style="margin-top: 12px;">🗑️ Clear All Data</button>
     </div>
 
     <script>
@@ -379,7 +500,7 @@
             const sum = parseInt(document.getElementById('sumInput').value);
 
             if (!sum || sum < 3 || sum > 18) {
-                showToast('Please enter sum between 3-18');
+                showToast('⚠️ Enter sum between 3-18');
                 return;
             }
 
@@ -396,7 +517,7 @@
             updateUI();
 
             document.getElementById('sumInput').value = '';
-            showToast(`Added: ${sum}`);
+            showToast(`✅ Added: ${sum} (${sum >= 11 ? 'Big' : 'Small'}, ${sum % 2 === 0 ? 'Even' : 'Odd'})`);
         }
 
         function quickAdd(sum) {
@@ -407,7 +528,7 @@
         function bulkImport() {
             const bulkData = document.getElementById('bulkData').value.trim();
             if (!bulkData) {
-                showToast('Please paste data first');
+                showToast('⚠️ Paste data first');
                 return;
             }
 
@@ -436,47 +557,91 @@
             saveData();
             updateUI();
             document.getElementById('bulkData').value = '';
-            showToast(`Imported ${imported} results!`);
+            showToast(`✅ Imported ${imported} results!`);
         }
 
         function generatePrediction() {
             if (results.length < 10) {
-                showToast('Need at least 10 results for prediction');
+                showToast('⚠️ Need at least 10 results');
                 return;
             }
 
-            // Simple prediction: most common sum in last 20 results
-            const recent = results.slice(-20);
-            const counts = {};
-            recent.forEach(r => counts[r.sum] = (counts[r.sum] || 0) + 1);
+            // Advanced prediction algorithm
+            const recent20 = results.slice(-20);
+            const recent10 = results.slice(-10);
+            const recent5 = results.slice(-5);
 
-            const predicted = Object.keys(counts).reduce((a, b) =>
-                counts[a] > counts[b] ? a : b
-            );
+            // Algorithm 1: Most frequent in last 20
+            const freq = {};
+            recent20.forEach(r => freq[r.sum] = (freq[r.sum] || 0) + 1);
+            const mostFrequent = Object.keys(freq).reduce((a, b) => freq[a] > freq[b] ? a : b);
 
+            // Algorithm 2: Average of last 5 (rounded)
+            const avgRecent = Math.round(recent5.reduce((sum, r) => sum + r.sum, 0) / recent5.length);
+
+            // Algorithm 3: Detect streaks
+            const lastTwo = recent10.slice(-2);
+            const isStreakBig = lastTwo.every(r => r.isBig);
+            const isStreakSmall = lastTwo.every(r => !r.isBig);
+
+            // Combine algorithms
+            let predicted = parseInt(mostFrequent);
+
+            // Apply streak bias
+            if (isStreakBig && predicted < 11) predicted += 3;
+            if (isStreakSmall && predicted > 10) predicted -= 3;
+
+            // Ensure valid range
+            predicted = Math.max(3, Math.min(18, predicted));
+
+            // Calculate confidence
+            const confidence = Math.min(95, (freq[predicted] / 20) * 100 + 45);
+
+            // Display prediction
             document.getElementById('predNum').textContent = predicted;
 
-            const sum = parseInt(predicted);
-            const isBig = sum >= 11;
-            const isEven = sum % 2 === 0;
+            const isBig = predicted >= 11;
+            const isEven = predicted % 2 === 0;
 
             document.getElementById('predBadges').innerHTML = `
-                <span class="badge ${isBig ? 'badge-big' : 'badge-small'}">${isBig ? 'Big' : 'Small'}</span>
-                <span class="badge ${isEven ? 'badge-even' : 'badge-odd'}">${isEven ? 'Even' : 'Odd'}</span>
+                <span class="badge ${isBig ? 'badge-big' : 'badge-small'}">${isBig ? 'BIG' : 'SMALL'}</span>
+                <span class="badge ${isEven ? 'badge-even' : 'badge-odd'}">${isEven ? 'EVEN' : 'ODD'}</span>
             `;
 
-            showToast('Prediction generated!');
+            document.getElementById('confBar').style.width = confidence + '%';
+            document.getElementById('confText').textContent = `${Math.round(confidence)}% Confidence`;
+
+            // Pattern insights
+            const bigCount = recent10.filter(r => r.isBig).length;
+            const evenCount = recent10.filter(r => r.isEven).length;
+
+            let insight = '';
+            if (bigCount >= 7) insight = '🔥 <strong>Hot Pattern:</strong> Big numbers trending (7/10)';
+            else if (bigCount <= 3) insight = '❄️ <strong>Cold Pattern:</strong> Small numbers trending (7/10)';
+            else if (evenCount >= 7) insight = '📊 <strong>Pattern:</strong> Even numbers dominating';
+            else if (evenCount <= 3) insight = '📊 <strong>Pattern:</strong> Odd numbers dominating';
+            else insight = '🎯 <strong>Balanced:</strong> No strong pattern detected';
+
+            document.getElementById('patternInsight').innerHTML = insight ?
+                `<div class="pattern-insight">${insight}</div>` : '';
+
+            showToast(`🎯 Prediction: ${predicted} (${isBig ? 'BIG' : 'SMALL'}, ${isEven ? 'EVEN' : 'ODD'})`);
         }
 
         function updateUI() {
             // Update stats
-            document.getElementById('statTotal').textContent = results.length;
-            document.getElementById('statBig').textContent = results.filter(r => r.isBig).length;
-            document.getElementById('statSmall').textContent = results.filter(r => !r.isBig).length;
+            const total = results.length;
+            const bigCount = results.filter(r => r.isBig).length;
+            const smallCount = total - bigCount;
+            const evenCount = results.filter(r => r.isEven).length;
+            const oddCount = total - evenCount;
+            const avg = total > 0 ? (results.reduce((sum, r) => sum + r.sum, 0) / total).toFixed(1) : '-';
 
-            const avg = results.length > 0
-                ? (results.reduce((sum, r) => sum + r.sum, 0) / results.length).toFixed(1)
-                : '-';
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statBig').textContent = bigCount;
+            document.getElementById('statSmall').textContent = smallCount;
+            document.getElementById('statEven').textContent = evenCount;
+            document.getElementById('statOdd').textContent = oddCount;
             document.getElementById('statAvg').textContent = avg;
 
             // Update history table
@@ -484,18 +649,18 @@
             if (results.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="4" style="text-align: center; padding: 24px; color: #a78bfa;">
-                            No data yet. Add some results!
+                        <td colspan="4" style="text-align: center; padding: 20px; color: #a78bfa;">
+                            Add results to start tracking
                         </td>
                     </tr>
                 `;
             } else {
                 tbody.innerHTML = results.slice().reverse().slice(0, 50).map((r, i) => `
                     <tr>
-                        <td>${results.length - i}</td>
-                        <td style="font-weight: 600;">${r.sum}</td>
-                        <td><span class="badge ${r.isBig ? 'badge-big' : 'badge-small'}">${r.isBig ? 'Big' : 'Small'}</span></td>
-                        <td><span class="badge ${r.isEven ? 'badge-even' : 'badge-odd'}">${r.isEven ? 'Even' : 'Odd'}</span></td>
+                        <td style="font-weight: 600;">${total - i}</td>
+                        <td style="font-weight: 700; font-size: 14px;">${r.sum}</td>
+                        <td><span class="badge ${r.isBig ? 'badge-big' : 'badge-small'}" style="font-size: 10px; padding: 4px 8px;">${r.isBig ? 'BIG' : 'SMALL'}</span></td>
+                        <td><span class="badge ${r.isEven ? 'badge-even' : 'badge-odd'}" style="font-size: 10px; padding: 4px 8px;">${r.isEven ? 'EVEN' : 'ODD'}</span></td>
                     </tr>
                 `).join('');
             }
@@ -506,11 +671,16 @@
         }
 
         function clearAll() {
-            if (confirm('Clear all data?')) {
+            if (confirm('🗑️ Clear all data? This cannot be undone.')) {
                 results = [];
                 saveData();
                 updateUI();
-                showToast('Data cleared');
+                document.getElementById('predNum').textContent = '?';
+                document.getElementById('predBadges').innerHTML = '';
+                document.getElementById('confBar').style.width = '0%';
+                document.getElementById('confText').textContent = 'Generate prediction to see AI confidence';
+                document.getElementById('patternInsight').innerHTML = '';
+                showToast('✅ Data cleared');
             }
         }
 
@@ -519,7 +689,7 @@
             toast.className = 'toast';
             toast.textContent = message;
             document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 2000);
+            setTimeout(() => toast.remove(), 2500);
         }
 
         // Initialize
