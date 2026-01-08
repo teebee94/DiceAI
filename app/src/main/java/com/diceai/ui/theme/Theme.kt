@@ -15,8 +15,7 @@ private val DarkColorScheme = darkColorScheme(
     secondary = DiceBlue,
     tertiary = DiceGreen,
     background = DarkBackground,
-    surface = Dark
-Surface,
+    surface = DarkSurface,
     error = DiceRed
 )
 
