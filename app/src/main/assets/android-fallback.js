@@ -1,5 +1,7 @@
 // Enhanced Android WebView Image Upload
-// Improved UI, better instructions, smoother workflow
+// DISABLED: Allow OCR to work for bulk image processing
+// User needs to upload screenshots with multiple results (10-15 per image)
+// OCR automatically extracts all results instead of manual entry
 
 (function () {
     const isAndroid = /Android/i.test(navigator.userAgent);
@@ -9,7 +11,9 @@
         return;
     }
 
-    console.log('[Android Fallback] 🤖 Initializing enhanced Android upload');
+    // DISABLED: Let OCR handle bulk uploads
+    console.log('[Android Fallback] ⚠️ DISABLED - Using OCR for bulk processing');
+    return;
 
     class AndroidImageFallback {
         constructor() {
