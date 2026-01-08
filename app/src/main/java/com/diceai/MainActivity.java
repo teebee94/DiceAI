@@ -80,14 +80,15 @@ public class MainActivity extends Activity {
                     // Create camera intent as option
                     Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-                    // Create file for camera photo
+                    // Create file for camera photo (sets cameraImageUri)
                     File photoFile = createImageFile();
-                    if (photoFile != null) {
-                        cameraImageUri = Uri.fromFile(photoFile);
+                    if (photoFile != null && cameraImageUri != null) {
                         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, cameraImageUri);
+                        cameraIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        cameraIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                     }
 
-                    // Create chooser with both options
+                    // Create chooser with BOTH options
                     Intent chooserIntent = Intent.createChooser(galleryIntent, "Select Images or Take Photo");
                     chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] { cameraIntent });
 
@@ -127,7 +128,19 @@ public class MainActivity extends Activity {
         try {
             String imageFileName = "DICEAI_" + System.currentTimeMillis();
             File storageDir = getExternalFilesDir(null);
-            return File.createTempFile(imageFileName, ".jpg", storageDir);
+            File imageFile = File.createTempFile(imageFileName, ".jpg", storageDir);
+
+            // Use FileProvider for Android 7+ (API 24+)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                cameraImageUri = androidx.core.content.FileProvider.getUriForFile(
+                        this,
+                        getPackageName() + ".fileprovider",
+                        imageFile);
+            } else {
+                cameraImageUri = Uri.fromFile(imageFile);
+            }
+
+            return imageFile;
         } catch (IOException e) {
             Log.e("DiceAI", "Error creating image file: " + e.getMessage());
             return null;
