@@ -81,62 +81,48 @@ class ImageAnalyzer {
     }
 
     // Parse OCR text into structured game results
+    // Format: Period ID (16 digits) | Sum (3-18) | Big/Small | Odd/Even | Dice images
     parseGameResults(text) {
         const results = [];
         const numbers = text.match(/\d+/g);
 
-        if (!numbers || numbers.length < 5) {
+        if (!numbers || numbers.length < 2) {
             return results;
         }
 
-        // Try to identify period numbers (14-17 digits) and sums (3-18)
-        let currentPeriod = null;
-        let dice = [];
+        console.log('[Image Analyzer] Extracted numbers:', numbers);
 
-        for (let i = 0; i < numbers.length; i++) {
+        // Strategy: Look for patterns of [16-digit Period ID] followed by [Sum 3-18]
+        // Table format means these appear in sequence
+        for (let i = 0; i < numbers.length - 1; i++) {
             const num = numbers[i];
-            const numInt = parseInt(num);
+            const nextNum = numbers[i + 1];
 
-            // Period number (14+ digits)
-            if (num.length >= 14) {
-                if (currentPeriod && dice.length >= 3) {
-                    // Save previous result
-                    const sum = dice.slice(0, 3).reduce((a, b) => a + b, 0);
+            // Check if current number is a Period ID (16 digits starting with 202)
+            if (num.length === 16 && num.startsWith('202')) {
+                const periodId = num;
+
+                // Next number should be the sum (3-18)
+                const sum = parseInt(nextNum);
+
+                if (sum >= 3 && sum <= 18) {
                     results.push({
-                        period: currentPeriod,
-                        dice: dice.slice(0, 3),
+                        period: periodId,
                         sum: sum,
                         isBig: sum >= 11,
-                        isEven: sum % 2 === 0
+                        isEven: sum % 2 === 0,
+                        dice: [] // Dice values not extracted (shown as images in screenshot)
                     });
-                    dice = [];
+
+                    // Skip the sum number
+                    i++;
+
+                    console.log('[Image Analyzer] Found result:', periodId, 'Sum:', sum);
                 }
-                currentPeriod = num;
-            }
-            // Dice values (1-6)
-            else if (numInt >= 1 && numInt <= 6 && dice.length < 3) {
-                dice.push(numInt);
-            }
-            // Sum total (3-18) - use this if we have period but no dice
-            else if (numInt >= 3 && numInt <= 18 && currentPeriod && dice.length === 0) {
-                // Estimate dice from sum (we don't know actual dice)
-                const avgDice = Math.round(numInt / 3);
-                dice = [avgDice, avgDice, numInt - (avgDice * 2)];
             }
         }
 
-        // Add last result if exists
-        if (currentPeriod && dice.length >= 3) {
-            const sum = dice.slice(0, 3).reduce((a, b) => a + b, 0);
-            results.push({
-                period: currentPeriod,
-                dice: dice.slice(0, 3),
-                sum: sum,
-                isBig: sum >= 11,
-                isEven: sum % 2 === 0
-            });
-        }
-
+        console.log('[Image Analyzer] Extracted', results.length, 'results');
         return results;
     }
 
