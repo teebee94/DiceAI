@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>🎲 DiceAI Mobile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 16px;
+            padding-bottom: 80px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 20px 0;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #a78bfa;
+            font-size: 14px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #c4b5fd;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .input-group textarea {
+            min-height: 120px;
+            font-family: monospace;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: #fff;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #8b5cf6;
+            color: #8b5cf6;
+        }
+
+        .prediction-box {
+            text-align: center;
+            padding: 32px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(99, 102, 241, 0.2));
+            border-radius: 16px;
+            margin: 16px 0;
+        }
+
+        .prediction-number {
+            font-size: 64px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .prediction-label {
+            font-size: 14px;
+            color: #c4b5fd;
+            margin-bottom: 16px;
+        }
+
+        .prediction-badges {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-big {
+            background: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .badge-small {
+            background: rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+        }
+
+        .badge-odd {
+            background: rgba(245, 158, 11, 0.3);
+            color: #fcd34d;
+        }
+
+        .badge-even {
+            background: rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .history-table th {
+            background: rgba(139, 92, 246, 0.2);
+            padding: 10px 6px;
+            text-align: left;
+            font-size: 11px;
+            position: sticky;
+            top: 0;
+        }
+
+        .history-table td {
+            padding: 10px 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .history-scroll {
+            max-height: 300px;
+            overflow-y: auto;
+            border-radius: 8px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #c4b5fd;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            animation: slideUp 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        .quick-add-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .quick-add-btn {
+            padding: 16px 8px;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .quick-add-btn:active {
+            background: rgba(139, 92, 246, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>🎲 DiceAI Mobile</h1>
+        <p>AI-Powered Dice Prediction</p>
+    </div>
+
+    <!-- Prediction Card -->
+    <div class="card">
+        <div class="card-title">🔮 AI Prediction</div>
+        <div class="prediction-box">
+            <div class="prediction-number" id="predNum">?</div>
+            <div class="prediction-label">Predicted Sum</div>
+            <div class="prediction-badges" id="predBadges"></div>
+        </div>
+        <button class="btn btn-primary" onclick="generatePrediction()">Generate Prediction</button>
+    </div>
+
+    <!-- Quick Add Card -->
+    <div class="card">
+        <div class="card-title">⚡ Quick Add</div>
+        <div class="input-group">
+            <label>Period ID (Optional)</label>
+            <input type="text" id="periodId" placeholder="e.g., 2025010812345678">
+        </div>
+        <div class="input-group">
+            <label>Sum (3-18) *</label>
+            <input type="number" id="sumInput" min="3" max="18" placeholder="Enter sum">
+        </div>
+        <button class="btn btn-success" onclick="addResult()">✅ Add Result</button>
+
+        <div class="quick-add-grid">
+            <button class="quick-add-btn" onclick="quickAdd(3)">3</button>
+            <button class="quick-add-btn" onclick="quickAdd(6)">6</button>
+            <button class="quick-add-btn" onclick="quickAdd(9)">9</button>
+            <button class="quick-add-btn" onclick="quickAdd(12)">12</button>
+            <button class="quick-add-btn" onclick="quickAdd(15)">15</button>
+            <button class="quick-add-btn" onclick="quickAdd(18)">18</button>
+        </div>
+    </div>
+
+    <!-- Bulk Import Card -->
+    <div class="card">
+        <div class="card-title">📊 Bulk Import</div>
+        <div class="input-group">
+            <label>Paste data (Period,Sum per line)</label>
+            <textarea id="bulkData" placeholder="2025010812345678,13
+2025010812345679,11
+2025010812345680,15"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="bulkImport()">Import All</button>
+    </div>
+
+    <!-- Stats Card -->
+    <div class="card">
+        <div class="card-title">📊 Statistics</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="statTotal">0</div>
+                <div class="stat-label">Total Results</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statBig">0</div>
+                <div class="stat-label">Big (11-18)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statSmall">0</div>
+                <div class="stat-label">Small (3-10)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statAvg">-</div>
+                <div class="stat-label">Average</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Card -->
+    <div class="card">
+        <div class="card-title">📜 History</div>
+        <div class="history-scroll">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Sum</th>
+                        <th>Type</th>
+                        <th>Parity</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody">
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 24px; color: #a78bfa;">
+                            No data yet. Add some results!
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <button class="btn btn-outline" onclick="clearAll()" style="margin-top: 16px;">Clear All Data</button>
+    </div>
+
+    <script>
+        let results = JSON.parse(localStorage.getItem('diceResults') || '[]');
+
+        function addResult() {
+            const period = document.getElementById('periodId').value.trim();
+            const sum = parseInt(document.getElementById('sumInput').value);
+
+            if (!sum || sum < 3 || sum > 18) {
+                showToast('Please enter sum between 3-18');
+                return;
+            }
+
+            const result = {
+                period: period || '-',
+                sum: sum,
+                isBig: sum >= 11,
+                isEven: sum % 2 === 0,
+                timestamp: Date.now()
+            };
+
+            results.push(result);
+            saveData();
+            updateUI();
+
+            document.getElementById('sumInput').value = '';
+            showToast(`Added: ${sum}`);
+        }
+
+        function quickAdd(sum) {
+            document.getElementById('sumInput').value = sum;
+            addResult();
+        }
+
+        function bulkImport() {
+            const bulkData = document.getElementById('bulkData').value.trim();
+            if (!bulkData) {
+                showToast('Please paste data first');
+                return;
+            }
+
+            const lines = bulkData.split('\n');
+            let imported = 0;
+
+            lines.forEach(line => {
+                const parts = line.split(',');
+                if (parts.length >= 2) {
+                    const period = parts[0].trim();
+                    const sum = parseInt(parts[1].trim());
+
+                    if (sum >= 3 && sum <= 18) {
+                        results.push({
+                            period: period,
+                            sum: sum,
+                            isBig: sum >= 11,
+                            isEven: sum % 2 === 0,
+                            timestamp: Date.now()
+                        });
+                        imported++;
+                    }
+                }
+            });
+
+            saveData();
+            updateUI();
+            document.getElementById('bulkData').value = '';
+            showToast(`Imported ${imported} results!`);
+        }
+
+        function generatePrediction() {
+            if (results.length < 10) {
+                showToast('Need at least 10 results for prediction');
+                return;
+            }
+
+            // Simple prediction: most common sum in last 20 results
+            const recent = results.slice(-20);
+            const counts = {};
+            recent.forEach(r => counts[r.sum] = (counts[r.sum] || 0) + 1);
+
+            const predicted = Object.keys(counts).reduce((a, b) =>
+                counts[a] > counts[b] ? a : b
+            );
+
+            document.getElementById('predNum').textContent = predicted;
+
+            const sum = parseInt(predicted);
+            const isBig = sum >= 11;
+            const isEven = sum % 2 === 0;
+
+            document.getElementById('predBadges').innerHTML = `
+                <span class="badge ${isBig ? 'badge-big' : 'badge-small'}">${isBig ? 'Big' : 'Small'}</span>
+                <span class="badge ${isEven ? 'badge-even' : 'badge-odd'}">${isEven ? 'Even' : 'Odd'}</span>
+            `;
+
+            showToast('Prediction generated!');
+        }
+
+        function updateUI() {
+            // Update stats
+            document.getElementById('statTotal').textContent = results.length;
+            document.getElementById('statBig').textContent = results.filter(r => r.isBig).length;
+            document.getElementById('statSmall').textContent = results.filter(r => !r.isBig).length;
+
+            const avg = results.length > 0
+                ? (results.reduce((sum, r) => sum + r.sum, 0) / results.length).toFixed(1)
+                : '-';
+            document.getElementById('statAvg').textContent = avg;
+
+            // Update history table
+            const tbody = document.getElementById('historyBody');
+            if (results.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 24px; color: #a78bfa;">
+                            No data yet. Add some results!
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = results.slice().reverse().slice(0, 50).map((r, i) => `
+                    <tr>
+                        <td>${results.length - i}</td>
+                        <td style="font-weight: 600;">${r.sum}</td>
+                        <td><span class="badge ${r.isBig ? 'badge-big' : 'badge-small'}">${r.isBig ? 'Big' : 'Small'}</span></td>
+                        <td><span class="badge ${r.isEven ? 'badge-even' : 'badge-odd'}">${r.isEven ? 'Even' : 'Odd'}</span></td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('diceResults', JSON.stringify(results));
+        }
+
+        function clearAll() {
+            if (confirm('Clear all data?')) {
+                results = [];
+                saveData();
+                updateUI();
+                showToast('Data cleared');
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+
+        // Initialize
+        updateUI();
+    </script>
+</body>
+
+</html>
