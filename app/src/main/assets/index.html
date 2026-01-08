@@ -2,319 +2,673 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="AI-powered dice prediction system with self-learning capabilities">
-  <title>🎲 AI Dice Predictor | Self-Learning System</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>🎲 DiceAI - Complete</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="index.css">
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 12px;
+            padding-bottom: 80px;
+        }
 
-  <!-- Tesseract.js for OCR -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+        .header {
+            text-align: center;
+            margin-bottom: 16px;
+            padding: 12px 0;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            color: #a78bfa;
+            font-size: 12px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #c4b5fd;
+        }
+
+        .prediction-box {
+            text-align: center;
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(99, 102, 241, 0.25));
+            border-radius: 14px;
+            margin: 10px 0;
+        }
+
+        .prediction-number {
+            font-size: 68px;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+
+        .prediction-badges {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-big {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .badge-small {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .badge-odd {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .badge-even {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .input-group {
+            margin-bottom: 10px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 4px;
+            color: #c4b5fd;
+            font-weight: 600;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .input-group textarea {
+            min-height: 80px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: #fff;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid rgba(139, 92, 246, 0.5);
+            color: #a78bfa;
+        }
+
+        .quick-add-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .quick-add-btn {
+            padding: 12px;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 900;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #a78bfa;
+            text-transform: uppercase;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .history-table th {
+            background: rgba(139, 92, 246, 0.2);
+            padding: 6px 4px;
+            text-align: left;
+            font-size: 10px;
+        }
+
+        .history-table td {
+            padding: 6px 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .history-scroll {
+            max-height: 250px;
+            overflow-y: auto;
+            border-radius: 8px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.95);
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+
+        .upload-zone {
+            border: 2px dashed rgba(139, 92, 246, 0.5);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(139, 92, 246, 0.05);
+            margin: 10px 0;
+        }
+
+        .upload-zone:hover {
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6, #6366f1);
+            transition: width 0.3s;
+        }
+
+        .extracted-results {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        #fileInput,
+        #importInput {
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
-  <!-- Header -->
-  <header class="header">
-    <div style="max-width: 1400px; margin: 0 auto;">
-      <h1 class="header-title">🎲 AI Dice Predictor</h1>
-      <p class="header-subtitle">Self-Learning Pattern Recognition System</p>
-
-      <!-- Timeframe Selector -->
-      <div
-        style="margin-top: var(--space-lg); display: flex; gap: var(--space-md); align-items: center; justify-content: center; flex-wrap: wrap;">
-        <div style="display: flex; align-items: center; gap: var(--space-sm);">
-          <label for="timeframeSelect"
-            style="color: var(--color-text-secondary); font-size: var(--font-size-sm); font-weight: 600;">⏱️ Game
-            Type:</label>
-          <select id="timeframeSelect" class="timeframe-select" onchange="app.changeTimeframe(this.value)">
-            <option value="1min">1 Minute (1440 runs/day)</option>
-            <option value="3min" selected>3 Minutes (480 runs/day)</option>
-            <option value="5min">5 Minutes (288 runs/day)</option>
-            <option value="10min">10 Minutes (144 runs/day)</option>
-          </select>
-        </div>
-        <div id="currentGameInfo"
-          style="color: var(--color-text-tertiary); font-size: var(--font-size-sm); padding: var(--space-xs) var(--space-md); background: rgba(255,255,255,0.1); border-radius: var(--radius-sm); backdrop-filter: blur(10px);">
-          Current Run: <span id="currentRunNumber">--</span> | Next Period: <span id="nextPeriodNumber">--</span>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main Container -->
-  <div class="container">
-
-    <!-- Prediction Section -->
-    <div class="card" style="animation-delay: 0s;">
-      <div class="card-header">
-        <h3 class="card-title">
-          <span class="card-icon">🔮</span>
-          AI Prediction
-        </h3>
-        <button class="btn btn-primary btn-sm" onclick="app.generatePrediction()">
-          Generate Prediction
-        </button>
-      </div>
-      <div class="card-body">
-        <div class="prediction-display" id="predictionDisplay">
-          <div class="prediction-number" id="predictionNumber">?</div>
-          <p class="prediction-label">Predicted Sum</p>
-
-          <div class="prediction-details">
-            <span id="predictionType">-</span>
-            <span id="predictionParity">-</span>
-          </div>
-
-          <div class="confidence-bar">
-            <div class="confidence-fill" id="confidenceFill"></div>
-          </div>
-          <p class="confidence-text">
-            <span id="confidenceText">-</span>
-          </p>
-
-          <!-- Competitive Mode Controls -->
-          <div
-            style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--color-border);">
-            <div
-              style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm);">
-              <label style="font-size: var(--font-size-sm); color: var(--color-text-secondary); font-weight: 600;">
-                🏆 Competitive Mode
-              </label>
-              <label class="toggle-switch">
-                <input type="checkbox" id="competitiveModeToggle">
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-            <div id="confidenceThresholdContainer" style="display: none;">
-              <label
-                style="font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-xs); display: block;">
-                Minimum Confidence: <span id="thresholdValue">55</span>%
-              </label>
-              <input type="range" id="confidenceThreshold" min="50" max="80" value="55"
-                style="width: 100%; accent-color: var(--color-primary);">
-            </div>
-          </div>
-        </div>
-        <!-- Feedback Buttons -->
-        <div class="feedback-buttons" id="feedbackButtons" style="display: none;">
-          <button class="btn btn-success" onclick="app.submitFeedback(true)">
-            ✓ Correct
-          </button>
-          <button class="btn btn-error" onclick="app.submitFeedback(false)">
-            ✗ Wrong
-          </button>
-        </div>
-      </div>
+    <div class="header">
+        <h1>🎲 DiceAI Complete</h1>
+        <p>Full-Featured AI Prediction System</p>
     </div>
 
-    <!-- Input Section -->
-    <div class="grid-2">
-      <!-- Manual Entry -->
-      <div class="card" style="animation-delay: 0.1s;">
-        <div class="card-header">
-          <h3 class="card-title">
-            <span class="card-icon">⌨️</span>
-            Enter Result
-          </h3>
+    <!-- Prediction -->
+    <div class="card">
+        <div class="card-title">🔮 AI Prediction</div>
+        <div class="prediction-box">
+            <div class="prediction-number" id="predNum">?</div>
+            <div class="prediction-badges" id="predBadges"></div>
         </div>
-        <div class="card-body">
-          <!-- Period Input -->
-          <div class="mb-md">
-            <label for="periodInput"
-              style="display: block; margin-bottom: var(--space-xs); color: var(--color-text-secondary); font-size: var(--font-size-sm); font-weight: 600;">
-              📅 Period Number
-            </label>
-            <input type="text" id="periodInput" class="period-input" placeholder="e.g., 2025122910102089"
-              style="width: 100%; padding: var(--space-sm); border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg-tertiary); color: var(--color-text); font-size: var(--font-size-base);">
-            <div id="periodValidation"
-              style="margin-top: var(--space-xs); font-size: var(--font-size-xs); color: var(--color-text-muted);">
-            </div>
-          </div>
+        <button class="btn btn-primary" onclick="app.generatePrediction()">Generate Prediction</button>
+    </div>
 
-          <!-- Dice Entry (Optional) -->
-          <div class="mb-md">
-            <label
-              style="display: block; margin-bottom: var(--space-xs); color: var(--color-text-secondary); font-size: var(--font-size-sm); font-weight: 600;">
-              🎲 Individual Dice (Optional)
-            </label>
-            <div style="display: flex; gap: var(--space-sm); margin-bottom: var(--space-sm);">
-              <input type="number" id="dice1" class="dice-input" min="1" max="6" placeholder="D1"
-                style="flex: 1; padding: var(--space-sm); border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg-tertiary); color: var(--color-text); text-align: center;">
-              <input type="number" id="dice2" class="dice-input" min="1" max="6" placeholder="D2"
-                style="flex: 1; padding: var(--space-sm); border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg-tertiary); color: var(--color-text); text-align: center;">
-              <input type="number" id="dice3" class="dice-input" min="1" max="6" placeholder="D3"
-                style="flex: 1; padding: var(--space-sm); border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg-tertiary); color: var(--color-text); text-align: center;">
-            </div>
-            <div id="diceSum"
-              style="font-size: var(--font-size-sm); color: var(--color-text-muted); text-align: center;"></div>
-          </div>
-
-          <p class="text-center mb-md" style="color: var(--color-text-secondary);">
-            Click a sum or enter dice above
-          </p>
-          <div class="number-pad" id="numberPad"></div>
+    <!-- Photo Upload -->
+    <div class="card">
+        <div class="card-title">📸 Image Scanning (OCR)</div>
+        <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+            <div style="font-size: 40px; margin-bottom: 8px;">📷</div>
+            <div style="font-size: 14px; margin-bottom: 4px;">Upload Screenshots</div>
+            <div style="font-size: 11px; color: #a78bfa;">Tap to select images</div>
         </div>
-      </div>
-
-      <!-- Image Upload -->
-      <div class="card" style="animation-delay: 0.15s;">
-        <div class="card-header">
-          <h3 class="card-title">
-            <span class="card-icon">📷</span>
-            Image Analysis
-          </h3>
-        </div>
-        <div class="card-body">
-          <div class="upload-zone" id="uploadZone">
-            <div class="upload-icon">📸</div>
-            <div class="upload-text">Drag & drop screenshots or click to upload</div>
-            <div class="upload-hint">Supports PNG, JPG, WebP • Bulk processing available</div>
-            <input type="file" id="fileInput" accept="image/png,image/jpeg,image/jpg,image/webp" multiple
-              style="display: none;">
-          </div>
-          <div id="uploadProgress" style="display: none;">
+        <input type="file" id="fileInput" accept="image/*" multiple onchange="app.handleImageUpload(event)">
+        <div id="ocrProgress" style="display:none;">
             <div class="progress-bar">
-              <div class="progress-fill" id="uploadProgressFill" style="width: 0%"></div>
+                <div class="progress-fill" id="ocrProgressBar"></div>
             </div>
-            <p class="text-center mt-sm" id="uploadStatus"
-              style="color: var(--color-text-secondary); font-size: var(--font-size-sm);"></p>
-          </div>
-          <div id="extractedNumbers" class="mt-md"></div>
+            <div id="ocrStatus" style="font-size: 11px; text-align: center; color: #a78bfa;"></div>
         </div>
-      </div>
+        <div id="extractedResults"></div>
     </div>
 
-    <!-- Stats & Learning -->
-    <div class="grid-2">
-      <!-- Statistics -->
-      <div class="card" style="animation-delay: 0.2s;">
-        <div class="card-header">
-          <h3 class="card-title">
-            <span class="card-icon">📊</span>
-            Statistics
-          </h3>
+    <!-- Quick Add -->
+    <div class="card">
+        <div class="card-title">⚡ Quick Entry</div>
+        <div class="input-group">
+            <label>Period ID (Optional)</label>
+            <input type="text" id="periodId" placeholder="2025010812345678">
         </div>
-        <div class="card-body">
-          <div class="stat-grid" id="statsGrid">
-            <div class="stat-item">
-              <div class="stat-value" id="statTotal">0</div>
-              <div class="stat-label">Total Rolls</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value" id="statAccuracy">--%</div>
-              <div class="stat-label">Accuracy</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value" id="statBig">0</div>
-              <div class="stat-label">Big (11-18)</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value" id="statSmall">0</div>
-              <div class="stat-label">Small (3-10)</div>
-            </div>
-          </div>
+        <div class="input-group">
+            <label>Sum (3-18) *</label>
+            <input type="number" id="sumInput" min="3" max="18" placeholder="Enter sum">
         </div>
-      </div>
+        <button class="btn btn-success" onclick="app.addResult()">✅ Add</button>
 
-      <!-- Learning Status -->
-      <div class="card" style="animation-delay: 0.25s;">
-        <div class="card-header">
-          <h3 class="card-title">
-            <span class="card-icon">🧠</span>
-            Learning Status
-          </h3>
+        <div class="quick-add-grid">
+            <button class="quick-add-btn" onclick="app.quickAdd(3)">3</button>
+            <button class="quick-add-btn" onclick="app.quickAdd(6)">6</button>
+            <button class="quick-add-btn" onclick="app.quickAdd(9)">9</button>
+            <button class="quick-add-btn" onclick="app.quickAdd(12)">12</button>
+            <button class="quick-add-btn" onclick="app.quickAdd(15)">15</button>
+            <button class="quick-add-btn" onclick="app.quickAdd(18)">18</button>
         </div>
-        <div class="card-body">
-          <div id="learningInsights"></div>
-          <div class="mt-lg">
-            <h4
-              style="font-size: var(--font-size-base); margin-bottom: var(--space-md); color: var(--color-text-secondary);">
-              Algorithm Performance
-            </h4>
-            <div class="algorithm-chart" id="algorithmChart"></div>
-          </div>
-        </div>
-      </div>
     </div>
 
-    <!-- Hot/Cold Heatmap -->
-    <div class="card" style="animation-delay: 0.3s;">
-      <div class="card-header">
-        <h3 class="card-title">
-          <span class="card-icon">🔥</span>
-          Hot & Cold Numbers
-        </h3>
-      </div>
-      <div class="card-body">
-        <p class="text-center mb-md" style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">
-          Based on last 50 rolls • Red = Hot (frequent) • Blue = Cold (rare)
-        </p>
-        <div class="heatmap" id="heatmap"></div>
-      </div>
+    <!-- Bulk Import -->
+    <div class="card">
+        <div class="card-title">📊 Bulk Import</div>
+        <div class="input-group">
+            <label>Paste Data (Period,Sum)</label>
+            <textarea id="bulkData" placeholder="2025010812345678,13
+2025010812345679,11"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="app.bulkImport()">Import All</button>
+    </div>
+
+    <!-- Data Management -->
+    <div class="card">
+        <div class="card-title">💾 Data Management</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <button class="btn btn-outline" onclick="app.exportData()">📤 Export</button>
+            <button class="btn btn-outline" onclick="document.getElementById('importInput').click()">📥 Import</button>
+        </div>
+        <input type="file" id="importInput" accept=".json" onchange="app.importData(event)">
+    </div>
+
+    <!-- Statistics -->
+    <div class="card">
+        <div class="card-title">📊 Statistics</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="statTotal">0</div>
+                <div class="stat-label">Total</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statBig">0</div>
+                <div class="stat-label">Big</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statSmall">0</div>
+                <div class="stat-label">Small</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statAvg">-</div>
+                <div class="stat-label">Average</div>
+            </div>
+        </div>
     </div>
 
     <!-- History -->
-    <div class="card" style="animation-delay: 0.35s;">
-      <div class="card-header">
-        <h3 class="card-title">
-          <span class="card-icon">📜</span>
-          History
-        </h3>
-        <div class="flex gap-md">
-          <button class="btn btn-outline btn-sm" onclick="app.exportData()">
-            💾 Export
-          </button>
-          <button class="btn btn-outline btn-sm" onclick="app.importData()">
-            📂 Import
-          </button>
-          <button class="btn btn-error btn-sm" onclick="app.clearAll()">
-            🗑️ Clear All
-          </button>
+    <div class="card">
+        <div class="card-title">📜 History (Last 50)</div>
+        <div class="history-scroll">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Period</th>
+                        <th>Sum</th>
+                        <th>Type</th>
+                        <th>Parity</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
+            </table>
         </div>
-      </div>
-      <div class="card-body">
-        <div class="history-table-scroll">
-          <table class="history-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Period</th>
-                <th>Sum</th>
-                <th>Dice</th>
-                <th>Type</th>
-                <th>Parity</th>
-                <th>Feedback</th>
-                <th>Time</th>
-              </tr>
-            </thead>
-            <tbody id="historyTableBody">
-              <tr>
-                <td colspan="6" style="text-align: center; padding: var(--space-xl); color: var(--color-text-muted);">
-                  No history yet. Add numbers to start predicting!
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+        <button class="btn btn-outline" onclick="app.clearAll()" style="margin-top: 10px;">Clear All</button>
     </div>
 
-  </div>
+    <script>
+        class DiceAI {
+            constructor() {
+                this.results = JSON.parse(localStorage.getItem('diceResults') || '[]');
+                this.worker = null;
+                this.updateUI();
+            }
 
-  <!-- Hidden import input -->
-  <input type="file" id="importInput" accept=".json" style="display: none;">
+            async addResult() {
+                const period = document.getElementById('periodId').value.trim();
+                const sum = parseInt(document.getElementById('sumInput').value);
 
-  <!-- Scripts -->
-  <script src="period-parser.js"></script>
-  <script src="prediction-engine.js"></script>
-  <script src="learning-engine.js"></script>
-  <script src="image-analyzer.js"></script>
-  <script src="ui-components.js"></script>
-  <script src="features.js"></script>
-  <script src="smart-features.js"></script>
-  <script src="app.js"></script>
+                if (!sum || sum < 3 || sum > 18) {
+                    this.showToast('⚠️ Enter sum 3-18');
+                    return;
+                }
+
+                this.results.push({
+                    period: period || '-',
+                    sum: sum,
+                    isBig: sum >= 11,
+                    isEven: sum % 2 === 0,
+                    timestamp: Date.now()
+                });
+
+                this.saveData();
+                this.updateUI();
+                document.getElementById('sumInput').value = '';
+                this.showToast(`✅ Added: ${sum}`);
+            }
+
+            quickAdd(sum) {
+                document.getElementById('sumInput').value = sum;
+                this.addResult();
+            }
+
+            bulkImport() {
+                const bulkData = document.getElementById('bulkData').value.trim();
+                if (!bulkData) return this.showToast('⚠️ Paste data first');
+
+                const lines = bulkData.split('\n');
+                let imported = 0;
+
+                lines.forEach(line => {
+                    const parts = line.split(',');
+                    if (parts.length >= 2) {
+                        const period = parts[0].trim();
+                        const sum = parseInt(parts[1].trim());
+
+                        if (sum >= 3 && sum <= 18) {
+                            this.results.push({
+                                period: period,
+                                sum: sum,
+                                isBig: sum >= 11,
+                                isEven: sum % 2 === 0,
+                                timestamp: Date.now()
+                            });
+                            imported++;
+                        }
+                    }
+                });
+
+                this.saveData();
+                this.updateUI();
+                document.getElementById('bulkData').value = '';
+                this.showToast(`✅ Imported ${imported} results`);
+            }
+
+            async handleImageUpload(event) {
+                const files = Array.from(event.target.files);
+                if (files.length === 0) return;
+
+                document.getElementById('ocrProgress').style.display = 'block';
+                document.getElementById('ocrStatus').textContent = 'Initializing OCR...';
+                document.getElementById('extractedResults').innerHTML = '';
+
+                let allExtracted = [];
+
+                for (let i = 0; i < files.length; i++) {
+                    document.getElementById('ocrProgressBar').style.width = ((i / files.length) * 100) + '%';
+                    document.getElementById('ocrStatus').textContent = `Processing ${i + 1}/${files.length}...`;
+
+                    try {
+                        const { data: { text } } = await Tesseract.recognize(files[i], 'eng');
+                        const extracted = this.parseOCR(text);
+                        allExtracted.push(...extracted);
+                    } catch (error) {
+                        console.error('OCR error:', error);
+                    }
+                }
+
+                document.getElementById('ocrProgress').style.display = 'none';
+                document.getElementById('ocrProgressBar').style.width = '0%';
+
+                if (allExtracted.length > 0) {
+                    this.displayExtractedResults(allExtracted);
+                } else {
+                    this.showToast('❌ No results found in images');
+                }
+            }
+
+            parseOCR(text) {
+                const results = [];
+                const numbers = text.match(/\d+/g) || [];
+
+                for (let i = 0; i < numbers.length - 1; i++) {
+                    const num = numbers[i];
+                    const nextNum = numbers[i + 1];
+
+                    if (num.length === 16 && num.startsWith('202')) {
+                        const sum = parseInt(nextNum);
+                        if (sum >= 3 && sum <= 18) {
+                            results.push({ period: num, sum: sum });
+                            i++;
+                        }
+                    }
+                }
+
+                return results;
+            }
+
+            displayExtractedResults(extracted) {
+                const container = document.getElementById('extractedResults');
+                container.className = 'extracted-results';
+                container.innerHTML = `
+                    <div style="font-weight: 600; margin-bottom: 8px;">✅ Found ${extracted.length} results</div>
+                    <div style="font-size: 11px; margin-bottom: 8px;">
+                        ${extracted.map(r => `${r.period}: ${r.sum}`).join(', ').substring(0, 100)}...
+                    </div>
+                    <button class="btn btn-success" onclick="app.importExtracted(${JSON.stringify(extracted).replace(/"/g, '&quot;')})">
+                        Import All ${extracted.length}
+                    </button>
+                `;
+            }
+
+            importExtracted(extracted) {
+                extracted.forEach(r => {
+                    this.results.push({
+                        period: r.period,
+                        sum: r.sum,
+                        isBig: r.sum >= 11,
+                        isEven: r.sum % 2 === 0,
+                        timestamp: Date.now()
+                    });
+                });
+
+                this.saveData();
+                this.updateUI();
+                document.getElementById('extractedResults').innerHTML = '';
+                this.showToast(`✅ Imported ${extracted.length} results`);
+            }
+
+            generatePrediction() {
+                if (this.results.length < 10) {
+                    return this.showToast('⚠️ Need 10+ results');
+                }
+
+                const recent = this.results.slice(-20);
+                const freq = {};
+                recent.forEach(r => freq[r.sum] = (freq[r.sum] || 0) + 1);
+                const predicted = parseInt(Object.keys(freq).reduce((a, b) => freq[a] > freq[b] ? a : b));
+
+                document.getElementById('predNum').textContent = predicted;
+
+                const isBig = predicted >= 11;
+                const isEven = predicted % 2 === 0;
+
+                document.getElementById('predBadges').innerHTML = `
+                    <span class="badge ${isBig ? 'badge-big' : 'badge-small'}">${isBig ? 'BIG' : 'SMALL'}</span>
+                    <span class="badge ${isEven ? 'badge-even' : 'badge-odd'}">${isEven ? 'EVEN' : 'ODD'}</span>
+                `;
+
+                this.showToast(`🎯 Prediction: ${predicted}`);
+            }
+
+            exportData() {
+                const data = {
+                    results: this.results,
+                    exported: new Date().toISOString(),
+                    version: '1.0'
+                };
+
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `diceai-export-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                this.showToast('✅ Exported data');
+            }
+
+            importData(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        this.results = data.results || data.history || [];
+                        this.saveData();
+                        this.updateUI();
+                        this.showToast('✅ Imported data');
+                    } catch (error) {
+                        this.showToast('❌ Import failed');
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            }
+
+            updateUI() {
+                const total = this.results.length;
+                const bigCount = this.results.filter(r => r.isBig).length;
+                const avg = total > 0 ? (this.results.reduce((sum, r) => sum + r.sum, 0) / total).toFixed(1) : '-';
+
+                document.getElementById('statTotal').textContent = total;
+                document.getElementById('statBig').textContent = bigCount;
+                document.getElementById('statSmall').textContent = total - bigCount;
+                document.getElementById('statAvg').textContent = avg;
+
+                const tbody = document.getElementById('historyBody');
+                if (total === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: #a78bfa;">No data yet</td></tr>';
+                } else {
+                    tbody.innerHTML = this.results.slice().reverse().slice(0, 50).map((r, i) => `
+                        <tr>
+                            <td>${total - i}</td>
+                            <td style="font-size: 10px;">${r.period.substring(8) || '-'}</td>
+                            <td style="font-weight: 700;">${r.sum}</td>
+                            <td><span class="badge ${r.isBig ? 'badge-big' : 'badge-small'}" style="font-size: 9px; padding: 3px 6px;">${r.isBig ? 'BIG' : 'SMALL'}</span></td>
+                            <td><span class="badge ${r.isEven ? 'badge-even' : 'badge-odd'}" style="font-size: 9px; padding: 3px 6px;">${r.isEven ? 'EVEN' : 'ODD'}</span></td>
+                        </tr>
+                    `).join('');
+                }
+            }
+
+            clearAll() {
+                if (confirm('Clear all data?')) {
+                    this.results = [];
+                    this.saveData();
+                    this.updateUI();
+                    document.getElementById('predNum').textContent = '?';
+                    document.getElementById('predBadges').innerHTML = '';
+                    this.showToast('✅ Cleared');
+                }
+            }
+
+            saveData() {
+                localStorage.setItem('diceResults', JSON.stringify(this.results));
+            }
+
+            showToast(message) {
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2500);
+            }
+        }
+
+        const app = new DiceAI();
+    </script>
 </body>
 
 </html>
