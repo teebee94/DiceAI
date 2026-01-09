@@ -255,30 +255,78 @@ fun QuickAddButtons(onAdd: (Int) -> Unit) {
         colors = CardDefaults.cardColors(containerColor = DarkSurface)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
+            Text("⚡ Quick Add All Numbers", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Row 1: 3-6
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                listOf(3, 6, 9, 12).forEach { sum ->
+                listOf(3, 4, 5, 6).forEach { sum ->
                     Button(
                         onClick = { onAdd(sum) },
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = DicePurple.copy(alpha = 0.3f))
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (sum % 2 == 0) DiceGreen.copy(alpha = 0.4f) else DiceOrange.copy(alpha = 0.4f)
+                        )
                     ) {
                         Text(sum.toString(), fontSize = 15.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
             Spacer(modifier = Modifier.height(6.dp))
+            
+            // Row 2: 7-10
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                listOf(15, 18).forEach { sum ->
+                listOf(7, 8, 9, 10).forEach { sum ->
                     Button(
                         onClick = { onAdd(sum) },
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = DicePurple.copy(alpha = 0.3f))
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (sum % 2 == 0) DiceGreen.copy(alpha = 0.4f) else DiceOrange.copy(alpha = 0.4f)
+                        )
+                    ) {
+                        Text(sum.toString(), fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            
+            // Row 3: 11-14
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                listOf(11, 12, 13, 14).forEach { sum ->
+                    Button(
+                        onClick = { onAdd(sum) },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (sum % 2 == 0) DiceGreen.copy(alpha = 0.4f) else DiceOrange.copy(alpha = 0.4f)
+                        )
+                    ) {
+                        Text(sum.toString(), fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            
+            // Row 4: 15-18
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                listOf(15, 16, 17, 18).forEach { sum ->
+                    Button(
+                        onClick = { onAdd(sum) },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (sum % 2 == 0) DiceGreen.copy(alpha = 0.4f) else DiceOrange.copy(alpha = 0.4f)
+                        )
                     ) {
                         Text(sum.toString(), fontSize = 15.sp, fontWeight = FontWeight.Bold)
                     }
