@@ -19,6 +19,8 @@ import com.diceai.ui.DiceViewModel
 import com.diceai.ui.Prediction
 import com.diceai.ui.theme.*
 
+@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun DiceAIScreen(viewModel: DiceViewModel) {
     val recentResults by viewModel.recentResults.collectAsState()
