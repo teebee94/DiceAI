@@ -140,7 +140,7 @@ fun DiceAIScreen(viewModel: DiceViewModel) {
                     if (parts.size >= 2) {
                         val period = parts[0].trim()
                         val sum = parts[1].trim().toIntOrNull()
-                        if (sum in 3..18) period to sum else null
+                        if (sum !=null && sum in 3..18) period to sum else null
                     } else null
                 }
                 viewModel.bulkInsert(results)
