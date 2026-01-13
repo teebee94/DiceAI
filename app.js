@@ -439,14 +439,23 @@ class DicePredictionApp {
         try {
             const { results, errors, skipped } = await this.imageAnalyzer.processBatch(files);
 
-            setTimeout(() => {
-                progressBar.style.display = 'none';
-            }, 2000);
+            console.log('📊 Upload Results:', { results, errors, skipped });
+
+            // Don't hide progress bar - keep it visible
+            progressBar.style.display = 'block';
+
+            // Show what was extracted
+            if (results.length === 0 && errors.length === 0) {
+                alert('⚠️ No data extracted! Check console (F12) for OCR output. Make sure images show period numbers clearly.');
+            } else if (results.length === 0 && errors.length > 0) {
+                alert(`❌ All ${files.length} images failed OCR. Check console (F12) for details.`);
+            }
 
             this.displayExtractedNumbers(results, errors, skipped);
         } catch (error) {
             progressBar.style.display = 'none';
-            alert('Error processing images: ' + error.message);
+            console.error('Upload Error:', error);
+            alert('Error processing images: ' + error.message + '\nCheck console (F12) for details.');
         }
     }
 
@@ -455,10 +464,27 @@ class DicePredictionApp {
         const container = document.getElementById('extractedNumbers');
         container.innerHTML = '';
 
-        if (results.length === 0 && errors.length === 0) return;
+        console.log('📋 Displaying Results:', { results, errors, skipped });
 
+        // Always create wrapper - don't return early
         const wrapper = document.createElement('div');
-        wrapper.style.cssText = 'border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-md); background: var(--color-bg-tertiary);';
+        wrapper.style.cssText = 'border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-md); background: var(--color-bg-tertiary); margin-top: var(--space-md);';
+
+        if (results.length === 0 && errors.length === 0) {
+            wrapper.innerHTML = `
+                <div style="text-align: center; padding: var(--space-lg); color: var(--color-warning);">
+                    <div style="font-size: 2rem; margin-bottom: var(--space-sm);">⚠️</div>
+                    <div style="font-weight: 700; margin-bottom: var(--space-sm);">No Data Extracted</div>
+                    <div style="font-size: var(--font-size-sm); color: var(--color-text-muted);">
+                        OCR couldn't find period numbers or sums in the images.<br>
+                        Press F12 to open console and check OCR logs.<br>
+                        Make sure images are clear and show the game table.
+                    </div>
+                </div>
+            `;
+            container.appendChild(wrapper);
+            return;
+        }
 
         if (results.length > 0) {
             const title = document.createElement('div');
@@ -471,7 +497,7 @@ class DicePredictionApp {
                 item.style.cssText = 'margin-bottom: var(--space-sm); padding: var(--space-sm); background: var(--color-bg-card); border-radius: var(--radius-sm);';
 
                 const diceDisplay = game.dice ? game.dice.join('-') + ' = ' : '';
-                const periodDisplay = game.period ? ` • Period: ...${game.period.slice(-6)}` : '';
+                const periodDisplay = game.period ? ` • Period: ...${game.period.slice(-6)}` : ' • No Period';
 
                 item.innerHTML = `
                     <div style="display: flex; gap: var(--space-sm); align-items: center;">
@@ -515,7 +541,7 @@ class DicePredictionApp {
                 this.saveData();
                 this.updateAllDisplays();
                 this.updateCurrentGameInfo();
-                container.innerHTML = '';
+                container.innerHTML = '<div style="padding: var(--space-md); text-align: center; color: var(--color-success);">✅ Successfully added ' + results.length + ' entries to history!</div>';
                 console.log(`✅ Added ${results.length} entries from images`);
             };
             wrapper.appendChild(addButton);
@@ -536,6 +562,9 @@ class DicePredictionApp {
         }
 
         container.appendChild(wrapper);
+
+        // Scroll to results
+        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     // Update AI insights display
