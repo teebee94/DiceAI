@@ -12,6 +12,7 @@ class FirebaseSync {
         this.syncEnabled = true;
         this.lastSyncTime = null;
         this.syncInProgress = false;
+        this.realtimeListener = null; // NEW: Real-time listener
     }
 
     // Called when auth state changes
@@ -19,8 +20,50 @@ class FirebaseSync {
         if (user) {
             this.userId = user.uid;
             this.syncFromCloud(); // Pull data from cloud
+            this.startRealtimeSync(); // NEW: Start real-time listener
         } else {
             this.userId = null;
+            this.stopRealtimeSync(); // NEW: Stop listener when signed out
+        }
+    }
+
+    // NEW: Start real-time synchronization
+    startRealtimeSync() {
+        if (!this.userId || this.realtimeListener) return;
+
+        console.log('🔴 Starting real-time sync...');
+        this.updateSyncStatus('🔴 Live sync active');
+
+        // Listen to changes in Firestore
+        this.realtimeListener = this.db.collection('users')
+            .doc(this.userId)
+            .onSnapshot((doc) => {
+                if (doc.exists && !this.syncInProgress) {
+                    const cloudData = doc.data();
+                    const cloudTimestamp = cloudData.updatedAt?.toMillis() || 0;
+                    const localTimestamp = this.lastSyncTime || 0;
+
+                    // Only update if cloud data is newer
+                    if (cloudTimestamp > localTimestamp) {
+                        console.log('📥 Receiving real-time update from cloud...');
+                        this.updateSyncStatus('📥 Updating from another device...');
+                        this.mergeCloudData(cloudData);
+                        setTimeout(() => this.updateSyncStatus('🔴 Live'), 2000);
+                    }
+                }
+            }, (error) => {
+                console.error('❌ Real-time sync error:', error);
+                this.updateSyncStatus('❌ Sync error');
+            });
+    }
+
+    // NEW: Stop real-time synchronization
+    stopRealtimeSync() {
+        if (this.realtimeListener) {
+            this.realtimeListener();
+            this.realtimeListener = null;
+            console.log('⚫ Stopped real-time sync');
+            this.updateSyncStatus('');
         }
     }
 
@@ -116,7 +159,7 @@ class FirebaseSync {
     }
 
     // Merge cloud data with local data
-    mergeCloudData(cloudData) {
+    mergeCloudData(cloudData, skipSave = false) {
         if (!cloudData) return;
 
         // Merge history for each timeframe
@@ -156,8 +199,14 @@ class FirebaseSync {
         this.app.updateAllDisplays();
         this.app.updateCurrentGameInfo();
 
-        // Save to localStorage as backup
-        this.app.saveData();
+        // Save to localStorage as backup (but don't trigger cloud sync)
+        if (!skipSave) {
+            // Temporarily disable sync to prevent loop
+            const wasSyncEnabled = this.syncEnabled;
+            this.syncEnabled = false;
+            localStorage.setItem('dicePredictionData', JSON.stringify(this.app.prepareDataForStorage()));
+            this.syncEnabled = wasSyncEnabled;
+        }
     }
 
     // Update sync status UI
