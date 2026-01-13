@@ -41,6 +41,20 @@ class DicePredictionApp {
             console.log('📡 Firebase Sync initialized');
         }
 
+        // Data Manager (if available)
+        this.dataManager = null;
+        if (typeof DataManager !== 'undefined') {
+            this.dataManager = new DataManager(this);
+            console.log('🔧 Data Manager initialized');
+        }
+
+        // AI Chat Assistant (if available)
+        this.aiChat = null;
+        if (typeof AIChatAssistant !== 'undefined' && this.dataManager) {
+            this.aiChat = new AIChatAssistant(this, this.dataManager);
+            console.log('🤖 AI Chat Assistant initialized');
+        }
+
         this.init();
     }
 
