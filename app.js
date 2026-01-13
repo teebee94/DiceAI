@@ -34,6 +34,13 @@ class DicePredictionApp {
         // Theme Manager
         this.themeManager = new ThemeManager();
 
+        // Firebase Sync (if available)
+        this.firebaseSync = null;
+        if (typeof FirebaseSync !== 'undefined') {
+            this.firebaseSync = new FirebaseSync(this);
+            console.log('📡 Firebase Sync initialized');
+        }
+
         this.init();
     }
 
@@ -778,6 +785,13 @@ class DicePredictionApp {
         });
 
         localStorage.setItem('dicePredictionData', JSON.stringify(data));
+
+        // Sync to Firebase cloud (if signed in)
+        if (this.firebaseSync) {
+            this.firebaseSync.syncToCloud().catch(err => {
+                console.error('Cloud sync failed:', err);
+            });
+        }
     }
 
     loadData() {
