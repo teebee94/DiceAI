@@ -411,32 +411,47 @@ class DicePredictionApp {
         console.log(isCorrect ? '✓ Correct prediction!' : '✗ Incorrect prediction. Learning...');
     }
 
-    // Handle image upload
+    // Handle image upload (OPTIMIZED!)
     async handleImageUpload(files) {
         if (files.length === 0) return;
 
-        document.getElementById('uploadProgress').style.display = 'block';
-        document.getElementById('uploadProgressFill').style.width = '0%';
-        document.getElementById('uploadStatus').textContent = 'Initializing OCR...';
+        const progressBar = document.getElementById('uploadProgress');
+        const progressFill = document.getElementById('uploadProgressFill');
+        const statusText = document.getElementById('uploadStatus');
 
-        this.imageAnalyzer.setBatchProgressCallback((current, total) => {
-            const progress = ((current + 1) / total) * 100;
-            document.getElementById('uploadProgressFill').style.width = `${progress}%`;
-            document.getElementById('uploadStatus').textContent = `Processing image ${current + 1} of ${total}...`;
+        progressBar.style.display = 'block';
+        progressFill.style.width = '0%';
+        statusText.textContent = `📤 Uploading ${files.length} images...`;
+
+        this.imageAnalyzer.setBatchProgressCallback((progress) => {
+            if (progress.type === 'batch') {
+                const pct = progress.progress;
+                progressFill.style.width = `${pct}%`;
+                statusText.textContent = `🔄 Processing ${progress.current}/${progress.total} (${progress.processed} added, ${progress.skipped} skipped)`;
+            } else if (progress.type === 'ocr') {
+                statusText.textContent = `🔍 OCR: ${progress.progress}%`;
+            } else if (progress.type === 'complete') {
+                progressFill.style.width = '100%';
+                statusText.textContent = `✅ Complete! ${progress.processed} processed, ${progress.skipped} duplicates skipped, ${progress.errors} errors`;
+            }
         });
 
         try {
-            const { results, errors } = await this.imageAnalyzer.processBatch(files);
-            document.getElementById('uploadProgress').style.display = 'none';
-            this.displayExtractedNumbers(results, errors);
+            const { results, errors, skipped } = await this.imageAnalyzer.processBatch(files);
+
+            setTimeout(() => {
+                progressBar.style.display = 'none';
+            }, 2000);
+
+            this.displayExtractedNumbers(results, errors, skipped);
         } catch (error) {
-            document.getElementById('uploadProgress').style.display = 'none';
+            progressBar.style.display = 'none';
             alert('Error processing images: ' + error.message);
         }
     }
 
     // Display extracted numbers from images
-    displayExtractedNumbers(results, errors) {
+    displayExtractedNumbers(results, errors, skipped = 0) {
         const container = document.getElementById('extractedNumbers');
         container.innerHTML = '';
 
@@ -448,71 +463,44 @@ class DicePredictionApp {
         if (results.length > 0) {
             const title = document.createElement('div');
             title.style.cssText = 'font-weight: 700; margin-bottom: var(--space-md); color: var(--color-success);';
-            title.textContent = `✓ Extracted data from ${results.length} images`;
+            title.textContent = `✓ Extracted ${results.length} unique results` + (skipped > 0 ? ` (${skipped} duplicates skipped)` : '');
             wrapper.appendChild(title);
 
-            results.forEach(result => {
+            results.forEach(game => {
                 const item = document.createElement('div');
                 item.style.cssText = 'margin-bottom: var(--space-sm); padding: var(--space-sm); background: var(--color-bg-card); border-radius: var(--radius-sm);';
 
-                let content = `<div style="font-size: var(--font-size-sm); color: var(--color-text-tertiary);">${result.fileName}</div>`;
+                const diceDisplay = game.dice ? game.dice.join('-') + ' = ' : '';
+                const periodDisplay = game.period ? ` • Period: ...${game.period.slice(-6)}` : '';
 
-                if (result.gameResults && result.gameResults.length > 0) {
-                    content += '<div style="margin-top: var(--space-xs);">';
-                    result.gameResults.forEach(game => {
-                        const diceDisplay = game.dice ? game.dice.join('-') : '';
-                        content += `<span class="badge badge-primary" style="margin-right: var(--space-xs);">`;
-                        if (diceDisplay) content += `${diceDisplay} = `;
-                        content += `${game.sum}</span>`;
-                    });
-                    content += '</div>';
-                } else if (result.numbers.length > 0) {
-                    content += '<div style="margin-top: var(--space-xs);">';
-                    content += result.numbers.map(num => `<span class="badge badge-primary" style="margin-right: var(--space-xs);">${num}</span>`).join('');
-                    content += '</div>';
-                }
-
-                item.innerHTML = content;
+                item.innerHTML = `
+                    <div style="display: flex; gap: var(--space-sm); align-items: center;">
+                        <span class="badge badge-${game.isBig ? 'error' : 'success'}" style="font-size: var(--font-size-lg);">${diceDisplay}${game.sum}</span>
+                        <span class="badge badge-${game.isEven ? 'primary' : 'warning'}">${game.isEven ? 'EVEN' : 'ODD'}</span>
+                        <span style="font-size: var(--font-size-sm); color: var(--color-text-tertiary);">${periodDisplay}</span>
+                    </div>
+                `;
                 wrapper.appendChild(item);
             });
 
             const addButton = document.createElement('button');
             addButton.className = 'btn btn-success mt-md';
-            addButton.textContent = 'Add All to History';
+            addButton.textContent = `Add All ${results.length} to History`;
             addButton.onclick = () => {
-                let addedCount = 0;
-                results.forEach(result => {
-                    if (result.gameResults && result.gameResults.length > 0) {
-                        result.gameResults.forEach(game => {
-                            this.predictionEngine.addRoll(game.sum);
-                            const entry = {
-                                number: game.sum,
-                                timestamp: Date.now(),
-                                isBig: game.isBig,
-                                isEven: game.isEven,
-                                period: game.period,
-                                dice: game.dice,
-                                timeframe: this.currentTimeframe,
-                                source: 'image_upload'
-                            };
-                            this.currentData.metadata.push(entry);
-                            addedCount++;
-                            if (game.period) this.lastPeriod = game.period;
-                        });
-                    } else if (result.numbers) {
-                        result.numbers.forEach(num => {
-                            this.predictionEngine.addRoll(num);
-                            this.currentData.metadata.push({
-                                number: num,
-                                timestamp: Date.now(),
-                                isBig: num >= 11,
-                                isEven: num % 2 === 0,
-                                timeframe: this.currentTimeframe,
-                                source: 'image_upload'
-                            });
-                            addedCount++;
-                        });
-                    }
+                results.forEach(game => {
+                    this.predictionEngine.addRoll(game.sum);
+                    const entry = {
+                        number: game.sum,
+                        timestamp: Date.now(),
+                        isBig: game.isBig,
+                        isEven: game.isEven,
+                        period: game.period,
+                        dice: game.dice,
+                        timeframe: this.currentTimeframe,
+                        source: 'image_upload'
+                    };
+                    this.currentData.metadata.push(entry);
+                    if (game.period) this.lastPeriod = game.period;
                 });
 
                 this.predictionEngine.metadata = this.currentData.metadata;
@@ -528,7 +516,7 @@ class DicePredictionApp {
                 this.updateAllDisplays();
                 this.updateCurrentGameInfo();
                 container.innerHTML = '';
-                console.log(`Added ${addedCount} entries from images`);
+                console.log(`✅ Added ${results.length} entries from images`);
             };
             wrapper.appendChild(addButton);
         }
