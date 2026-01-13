@@ -1,6 +1,6 @@
 // =======================================
-// Image Analyzer - OPTIMIZED
-// Fast OCR with progress tracking
+// Image Analyzer - GAME FORMAT SPECIFIC
+// Optimized for lottery game format
 // =======================================
 
 class ImageAnalyzer {
@@ -27,16 +27,16 @@ class ImageAnalyzer {
         await this.worker.loadLanguage('eng');
         await this.worker.initialize('eng');
 
-        // Optimized parameters
+        // Optimized for numbers only
         await this.worker.setParameters({
-            tessedit_char_whitelist: '0123456789 \n',  // Only digits and whitespace
-            tessedit_pageseg_mode: Tesseract.PSM.SPARSE_TEXT,  // Faster for numbers
+            tessedit_char_whitelist: '0123456789',
+            tessedit_pageseg_mode: Tesseract.PSM.SPARSE_TEXT,
         });
 
         return this.worker;
     }
 
-    // Compress image for faster OCR  (3-5x speed improvement)
+    // Compress image for faster OCR
     async compressImage(file) {
         return new Promise((resolve) => {
             const reader = new FileReader();
@@ -46,8 +46,8 @@ class ImageAnalyzer {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
 
-                    // Resize to 600 px max (sweet spot for OCR speed+accuracy)
-                    const maxSize = 600;
+                    // Resize to 800px for better OCR of small text
+                    const maxSize = 800;
                     let { width, height } = img;
 
                     if (width > height && width > maxSize) {
@@ -61,11 +61,11 @@ class ImageAnalyzer {
                     canvas.width = width;
                     canvas.height = height;
 
-                    // Enhance for OCR: grayscale + high contrast
-                    ctx.filter = 'grayscale(100%) contrast(150%)';
+                    // High contrast for better OCR
+                    ctx.filter = 'grayscale(100%) contrast(200%)';
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.6);
+                    canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.7);
                 };
                 img.src = e.target.result;
             };
@@ -73,18 +73,17 @@ class ImageAnalyzer {
         });
     }
 
-    // Process single image (fast version)
+    // Process single image
     async processImage(file) {
         try {
             await this.initWorker();
 
-            // Compress first
             const compressed = await this.compressImage(file);
             const imageUrl = await this.readFileAsDataURL(compressed);
 
             const { data } = await this.worker.recognize(imageUrl);
 
-            // Extract game data
+            // Extract game data using SPECIFIC format
             const gameResults = this.extractGameData(data.text);
 
             return {
@@ -109,7 +108,7 @@ class ImageAnalyzer {
         const total = files.length;
         let processed = 0;
         let skipped = 0;
-        const seenSums = new Set();  // Track duplicates
+        const seenPeriods = new Set();  // Track by period to avoid duplicates
 
         for (let i = 0; i < files.length; i++) {
             if (this.progressCallback) {
@@ -126,11 +125,14 @@ class ImageAnalyzer {
             const result = await this.processImage(files[i]);
 
             if (result.success && result.gameResults.length > 0) {
-                // Add only unique results
+                // Add only unique periods
                 result.gameResults.forEach(game => {
-                    const key = `${game.sum}-${game.period || 'noperiod'}`;
-                    if (!seenSums.has(key)) {
-                        seenSums.add(key);
+                    if (game.period && !seenPeriods.has(game.period)) {
+                        seenPeriods.add(game.period);
+                        results.push(game);
+                        processed++;
+                    } else if (!game.period) {
+                        // No period, still add but might be duplicate
                         results.push(game);
                         processed++;
                     } else {
@@ -158,60 +160,112 @@ class ImageAnalyzer {
         return { results, errors, skipped };
     }
 
-    // Extract structured game data (improved accuracy)
+    // Extract game data - SPECIALIZED for your game format
     extractGameData(text) {
         const games = [];
-        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
 
-        // Find all numbers in text
+        // Extract all numbers from text
         const allNumbers = text.match(/\d+/g) || [];
 
-        // Look for period (17-19 digits)
-        const period = allNumbers.find(n => n.length >= 17 && n.length <= 19);
+        console.log('OCR Text:', text);
+        console.log('All numbers found:', allNumbers);
 
-        // Look for sum (3-18)
-        const sums = allNumbers.filter(n => {
-            const num = parseInt(n);
-            return num >= 3 && num <= 18 && n.length <= 2;
-        });
+        // Find periods (17-18 digits: YYYYMMDDHHMMSSID)
+        // Format: 2025 12 29 10 10 20 280 = 20251229101020280 (17 digits)
+        const periods = allNumbers.filter(n => n.length >= 17 && n.length <= 18);
 
-        // Look for dice (three consecutive 1-6)
-        let dice = null;
-        for (let i = 0; i < allNumbers.length - 2; i++) {
-            const d1 = parseInt(allNumbers[i]);
-            const d2 = parseInt(allNumbers[i + 1]);
-            const d3 = parseInt(allNumbers[i + 2]);
+        console.log('Periods found:', periods);
 
-            if (d1 >= 1 && d1 <= 6 && d2 >= 1 && d2 <= 6 && d3 >= 1 && d3 <= 6) {
-                dice = [d1, d2, d3];
-                break;
+        if (periods.length === 0) {
+            console.log('No periods found - looking for partial matches');
+            // Try to find 14+ digit numbers that might be truncated periods
+            const partialPeriods = allNumbers.filter(n => n.length >= 14 && n.length <= 18);
+            if (partialPeriods.length > 0) {
+                periods.push(...partialPeriods);
             }
         }
 
-        // Build game result
-        if (sums.length > 0) {
-            const sum = parseInt(sums[0]);  // Take first valid sum
-            const calcSum = dice ? dice.reduce((a, b) => a + b, 0) : sum;
+        // Extract sums (numbers 3-18 that are 1-2 digits)
+        const sums = allNumbers.filter(n => {
+            const num = parseInt(n);
+            return n.length <= 2 && num >= 3 && num <= 18;
+        });
 
-            games.push({
-                period: period || null,
-                sum: dice ? calcSum : sum,  // Use calculated sum if we have dice
-                dice: dice,
-                isBig: calcSum >= 11,
-                isEven: calcSum % 2 === 0
-            });
-        } else if (dice) {
-            // No sum found but have dice
-            const calcSum = dice.reduce((a, b) => a + b, 0);
-            games.push({
-                period: period || null,
-                sum: calcSum,
-                dice: dice,
-                isBig: calcSum >= 11,
-                isEven: calcSum % 2 === 0
+        console.log('Sums found:', sums);
+
+        // Extract potential dice values (1-6, single digit)
+        const diceValues = allNumbers.filter(n => {
+            const num = parseInt(n);
+            return n.length === 1 && num >= 1 && num <= 6;
+        });
+
+        console.log('Dice values found:', diceValues);
+
+        // Match period with sum and dice
+        periods.forEach((period, index) => {
+            const sum = sums[index] ? parseInt(sums[index]) : null;
+
+            // Try to find 3 consecutive dice values for this entry
+            let dice = null;
+            const diceStartIdx = index * 3;
+            if (diceStartIdx + 2 < diceValues.length) {
+                const d1 = parseInt(diceValues[diceStartIdx]);
+                const d2 = parseInt(diceValues[diceStartIdx + 1]);
+                const d3 = parseInt(diceValues[diceStartIdx + 2]);
+
+                // Verify dice sum matches
+                if (sum && (d1 + d2 + d3 === sum)) {
+                    dice = [d1, d2, d3];
+                } else {
+                    // Sum doesn't match, still use dice but recalculate
+                    dice = [d1, d2, d3];
+                }
+            }
+
+            // If we have sum or dice, create entry
+            const finalSum = dice ? dice.reduce((a, b) => a + b, 0) : sum;
+
+            if (finalSum) {
+                games.push({
+                    period: period,
+                    sum: finalSum,
+                    dice: dice,
+                    isBig: finalSum >= 11,
+                    isEven: finalSum % 2 === 0
+                });
+            }
+        });
+
+        // If no periods found but we have sums, create entries without periods
+        if (games.length === 0 && sums.length > 0) {
+            console.log('No periods, but found sums - creating entries without periods');
+            sums.forEach((sumStr, index) => {
+                const sum = parseInt(sumStr);
+
+                // Try to find matching dice
+                let dice = null;
+                const diceStartIdx = index * 3;
+                if (diceStartIdx + 2 < diceValues.length) {
+                    const d1 = parseInt(diceValues[diceStartIdx]);
+                    const d2 = parseInt(diceValues[diceStartIdx + 1]);
+                    const d3 = parseInt(diceValues[diceStartIdx + 2]);
+
+                    if (d1 + d2 + d3 === sum) {
+                        dice = [d1, d2, d3];
+                    }
+                }
+
+                games.push({
+                    period: null,
+                    sum: sum,
+                    dice: dice,
+                    isBig: sum >= 11,
+                    isEven: sum % 2 === 0
+                });
             });
         }
 
+        console.log('Final extracted games:', games);
         return games;
     }
 
