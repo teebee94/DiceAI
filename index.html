@@ -97,6 +97,11 @@
                             <input type="range" id="confidenceThreshold" min="50" max="80" value="55"
                                 style="width: 100%; accent-color: var(--color-primary);">
                         </div>
+
+                        <!-- Theme Selector (NEW) -->
+                        <div id="themeSelector"
+                            style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--color-border);">
+                        </div>
                     </div>
                 </div>
 
@@ -109,6 +114,19 @@
                         ✗ Wrong
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <!-- AI Prediction Explanation (NEW) -->
+        <div class="card" id="predictionExplanationCard" style="display: none; animation-delay: 0.05s;">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <span class="card-icon">💡</span>
+                    Why This Prediction?
+                </h3>
+            </div>
+            <div class="card-body">
+                <div id="predictionExplanation"></div>
             </div>
         </div>
 
@@ -337,6 +355,8 @@
     <script src="learning-engine.js"></script>
     <script src="image-analyzer.js"></script>
     <script src="ai-insights.js"></script>
+    <script src="theme-manager.js"></script>
+    <script src="advanced-ai.js"></script>
     <script src="app.js"></script>
     <script src="keyboard-shortcuts.js"></script>
 </body>

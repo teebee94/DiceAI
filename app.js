@@ -28,6 +28,12 @@ class DicePredictionApp {
         // AI Insights
         this.aiInsights = new AIInsights(this.predictionEngine, this.learningEngine);
 
+        // Advanced AI
+        this.advancedAI = new AdvancedAI(this.predictionEngine, this.aiInsights);
+
+        // Theme Manager
+        this.themeManager = new ThemeManager();
+
         this.init();
     }
 
@@ -75,6 +81,16 @@ class DicePredictionApp {
     setupUI() {
         this.createNumberPad();
         this.createHeatmap();
+        this.addThemeSelector(); // Add theme selector
+    }
+
+    // Add theme selector to UI (NEW!)
+    addThemeSelector() {
+        const container = document.getElementById('themeSelector');
+        if (!container) return;
+
+        const themeSelector = this.themeManager.createThemeSelector();
+        container.appendChild(themeSelector);
     }
 
     // Create number pad (3-18)
@@ -351,6 +367,7 @@ class DicePredictionApp {
             confidenceFill.style.width = `${prediction.confidence}%`;
             confidenceText.textContent = prediction.message;
             document.getElementById('feedbackButtons').style.display = 'none';
+            document.getElementById('predictionExplanationCard').style.display = 'none';
             return;
         }
 
@@ -361,6 +378,9 @@ class DicePredictionApp {
         confidenceText.textContent = `Confidence: ${prediction.confidence}% • Using ${prediction.contributors?.length || 0} algorithms`;
 
         document.getElementById('feedbackButtons').style.display = 'flex';
+
+        // Show AI explanation (NEW!)
+        this.showPredictionExplanation(prediction);
     }
 
     // Submit feedback
@@ -565,6 +585,26 @@ class DicePredictionApp {
                 </div>
             `;
         }).join('');
+    }
+
+    // Show prediction explanation (NEW!)
+    showPredictionExplanation(prediction) {
+        const card = document.getElementById('predictionExplanationCard');
+        const container = document.getElementById('predictionExplanation');
+
+        if (!prediction || prediction.belowThreshold) {
+            card.style.display = 'none';
+            return;
+        }
+
+        // Generate explanation card
+        const explanationCard = this.advancedAI.createExplanationCard(prediction);
+        container.innerHTML = '';
+        container.appendChild(explanationCard);
+
+        // Show card with animation
+        card.style.display = 'block';
+        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     // Update all UI displays
