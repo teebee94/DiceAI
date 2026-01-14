@@ -55,6 +55,20 @@ class DicePredictionApp {
             console.log('🤖 AI Chat Assistant initialized');
         }
 
+        // Analytics Engine (if available)
+        this.analyticsEngine = null;
+        if (typeof AnalyticsEngine !== 'undefined') {
+            this.analyticsEngine = new AnalyticsEngine(this);
+            console.log('📊 Analytics Engine initialized');
+        }
+
+        // Chart Visualizer (if available)
+        this.chartVisualizer = null;
+        if (typeof ChartVisualizer !== 'undefined' && this.analyticsEngine) {
+            this.chartVisualizer = new ChartVisualizer(this, this.analyticsEngine);
+            console.log('📈 Chart Visualizer initialized');
+        }
+
         this.init();
     }
 
