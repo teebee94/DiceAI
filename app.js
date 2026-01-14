@@ -84,6 +84,13 @@ class DicePredictionApp {
             console.log('🔮 Advanced Predictor initialized');
         }
 
+        // Notification Manager (if available)
+        this.notificationManager = null;
+        if (typeof NotificationManager !== 'undefined') {
+            this.notificationManager = new NotificationManager(this);
+            console.log('🔔 Notification Manager initialized');
+        }
+
         this.init();
     }
 
