@@ -98,6 +98,20 @@ class DicePredictionApp {
             console.log('🤖 Automation Engine initialized');
         }
 
+        // Voice Commands (if available)
+        this.voiceCommands = null;
+        if (typeof VoiceCommands !== 'undefined') {
+            this.voiceCommands = new VoiceCommands(this);
+            console.log('🎤 Voice Commands initialized');
+        }
+
+        // Data Exporter (if available)
+        this.dataExporter = null;
+        if (typeof DataExporter !== 'undefined') {
+            this.dataExporter = new DataExporter(this);
+            console.log('💾 Data Exporter initialized');
+        }
+
         this.init();
     }
 
