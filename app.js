@@ -91,6 +91,13 @@ class DicePredictionApp {
             console.log('🔔 Notification Manager initialized');
         }
 
+        // Automation Engine (if available)
+        this.automationEngine = null;
+        if (typeof AutomationEngine !== 'undefined') {
+            this.automationEngine = new AutomationEngine(this);
+            console.log('🤖 Automation Engine initialized');
+        }
+
         this.init();
     }
 
