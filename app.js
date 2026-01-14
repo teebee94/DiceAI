@@ -69,6 +69,21 @@ class DicePredictionApp {
             console.log('📈 Chart Visualizer initialized');
         }
 
+        // Prediction Tracker (if available)
+        this.predictionTracker = null;
+        if (typeof PredictionTracker !== 'undefined') {
+            this.predictionTracker = new PredictionTracker(this);
+            this.predictionTracker.loadFromStorage();
+            console.log('🎯 Prediction Tracker initialized');
+        }
+
+        // Advanced Predictor (if available)
+        this.advancedPredictor = null;
+        if (typeof AdvancedPredictor !== 'undefined') {
+            this.advancedPredictor = new AdvancedPredictor(this.predictionEngine);
+            console.log('🔮 Advanced Predictor initialized');
+        }
+
         this.init();
     }
 
