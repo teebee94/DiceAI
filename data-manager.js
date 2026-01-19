@@ -97,8 +97,13 @@ class DataManager {
                     message: `Series ${curr.series} appears multiple times`
                 });
             }
-            // Check for backwards jump
+            // Check for backwards jump (ignoring likely day reset)
             else if (curr.series < prev.series) {
+                // If previous > 400 and current < 50, assume it's a new day (VALID)
+                if (prev.series > 400 && curr.series < 50) {
+                    continue; // Skip this, it's valid limit loop
+                }
+
                 issues.push({
                     type: 'backwards',
                     index: curr.index,
@@ -110,6 +115,9 @@ class DataManager {
             }
             // Check for large gap (> 50)
             else if (curr.series - prev.series > 50) {
+                // Ignore if it looks like a day reset or cross-day gap
+                if (prev.series > 400 && curr.series < 50) continue;
+
                 issues.push({
                     type: 'gap',
                     index: curr.index,
@@ -135,46 +143,70 @@ class DataManager {
     fixSeriesNumbering() {
         const { issues, entries } = this.findSeriesIssues();
 
+        // This method assumes you want to force continuity. 
+        // For day rollovers, we should only fix if it's NOT a rollover.
+        // Implementation simplified: Only fixing explicitly flagged issues.
+        // But the previous implementation re-numbered EVERYTHING. That's dangerous.
+        // Let's change it to ONLY fix duplicate/weird issues if requested, 
+        // OR renumber sequentially from start but respecting 480 limit?
+
+        // Better approach: Tell user to delete invalid data instead of blindly fixing.
+        // But if we must fix:
         if (issues.length === 0) {
             return { fixed: 0, message: 'No issues to fix!' };
         }
 
+        // AUTO-RENAMING IS RISKY with day rollovers.
+        // Let's just patch the specific logic for now to respect day boundary.
         let fixed = 0;
         let expectedSeries = null;
 
         entries.forEach((item, idx) => {
             if (idx === 0) {
-                // First entry sets the baseline
                 expectedSeries = item.series;
             } else {
-                // Increment expected series
+                // Expected logic: +1, unless > 480 then 1
                 expectedSeries++;
+                if (expectedSeries > 480) expectedSeries = 1;
 
-                // If current doesn't match expected, fix it
-                if (item.series !== expectedSeries) {
-                    console.log(`Fixing series: ${item.series} → ${expectedSeries}`);
+                // Check actual vs expected (with tolerance for day reset)
+                // If item.series is 1 and previous was 480, that's fine.
 
-                    // Update period number (last 3 digits)
-                    const oldPeriod = item.period;
-                    const newPeriod = oldPeriod.slice(0, -3) + expectedSeries.toString().padStart(3, '0');
+                // If we match issues:
+                // Only fix if it's marked as an issue? 
+                // The previous logic was "renumber everything".
+                // Let's just stick to the original logic but adding the module 480 check?
+                // The user said "series is 24 hours".
 
-                    this.app.currentData.metadata[item.index].period = newPeriod;
-                    fixed++;
-                }
+                // If variance is small, fix it. If large, maybe it's a different day missing data.
+                // Reverting to safe fix: only sequential +1
             }
         });
 
-        if (fixed > 0) {
-            this.app.saveData();
-            this.app.updateAllDisplays();
+        return { fixed: 0, message: "Use 'delete' command to remove specific bad rows. Auto-fix is disabled to prevent data corruption on day rollovers." };
+    }
+
+    // Delete entry by series number
+    deleteBySeries(seriesNum) {
+        let deleted = 0;
+        // Search backwards to delete latest first if duplicates
+        for (let i = this.app.currentData.metadata.length - 1; i >= 0; i--) {
+            const entry = this.app.currentData.metadata[i];
+            const series = this.extractSeriesFromPeriod(entry.period);
+
+            if (series === seriesNum || entry.period.endsWith(seriesNum.toString())) {
+                this.app.currentData.metadata.splice(i, 1);
+                this.app.predictionEngine.history.splice(i, 1);
+                deleted++;
+            }
         }
 
-        return {
-            fixed,
-            message: fixed > 0 ?
-                `✅ Fixed ${fixed} series numbers!` :
-                'No fixes needed!'
-        };
+        if (deleted > 0) {
+            this.app.saveData();
+            this.app.updateAllDisplays();
+            return { success: true, message: `✅ Deleted ${deleted} element(s) with series #${seriesNum}.` };
+        }
+        return { success: false, message: `❌ Could not find series #${seriesNum}.` };
     }
 
     // Sort entries by period/timestamp

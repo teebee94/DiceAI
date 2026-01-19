@@ -29,7 +29,11 @@ class PredictionEngine {
             bayesianEngine: { weight: 1.35, name: 'Bayesian Probability' },
             streakMomentum: { weight: 1.2, name: 'Streak & Momentum' },
             diceCorrelation: { weight: 1.25, name: 'Dice Correlation' },
-            multiLevel: { weight: 1.15, name: 'Multi-Level Patterns' }
+            multiLevel: { weight: 1.15, name: 'Multi-Level Patterns' },
+            diceCorrelation: { weight: 1.25, name: 'Dice Correlation' },
+            multiLevel: { weight: 1.15, name: 'Multi-Level Patterns' },
+            streakAdaptation: { weight: 1.4, name: 'Streak Adaptation' },
+            dayPattern: { weight: 1.1, name: 'Day of Week Pattern' } // New date-aware algo
         };
 
         // Performance tracking
@@ -45,15 +49,26 @@ class PredictionEngine {
         // Competitive mode
         this.competitiveMode = false;
         this.confidenceThreshold = 0.55;
+        this.streakWeight = 0.0; // Dynamic weight based on recent success
     }
 
     // Add a roll to history
     addRoll(number, timestamp = Date.now()) {
+        const date = new Date(timestamp);
+
         this.history.push({
             number,
             timestamp,
             isBig: number >= 11,
-            isEven: number % 2 === 0
+            isEven: number % 2 === 0,
+            dateMetadata: {
+                year: date.getFullYear(),
+                month: date.getMonth(),      // 0-11
+                day: date.getDate(),         // 1-31
+                weekDay: date.getDay(),      // 0-6 (Sun-Sat)
+                hour: date.getHours(),       // 0-23
+                minute: date.getMinutes()
+            }
         });
     }
 
@@ -83,6 +98,9 @@ class PredictionEngine {
         algorithmResults.streakMomentum = this.streakMomentumAnalysis();
         algorithmResults.diceCorrelation = this.diceCorrelationAnalysis();
         algorithmResults.multiLevel = this.multiLevelPatternRecognition();
+        algorithmResults.multiLevel = this.multiLevelPatternRecognition();
+        algorithmResults.streakAdaptation = this.streakAdaptation();
+        algorithmResults.dayPattern = this.dayPatternAnalysis();
 
         // Weighted voting system
         for (const [algoName, result] of Object.entries(algorithmResults)) {
@@ -713,6 +731,80 @@ class PredictionEngine {
         return { predictions, patterns };
     }
 
+    // Algorithm 17: Streak Adaptation (NEW)
+    // Adjusts weights dynamically based on recent winning streaks
+    streakAdaptation() {
+        if (this.history.length < 5) return { predictions: [] };
+
+        // This is a meta-algorithm that boosts trend-following algorithms
+        // if we are in a winning streak
+
+        // This logic is simplified as we don't have access to "actual wins" here directly,
+        // but we can infer stability. If variance is low, increase confidence.
+
+        const recent = this.history.slice(-5).map(r => r.number);
+        const variance = this.calculateVariance(recent);
+
+        const predictions = [];
+
+        // If variance is low (stable period), predict numbers close to average
+        if (variance < 10) {
+            const avg = recent.reduce((a, b) => a + b, 0) / recent.length;
+            const target = Math.round(avg);
+            predictions.push({
+                number: target,
+                confidence: 0.8 // High confidence in stability
+            });
+            // Also support neighbors
+            if (target > 3) predictions.push({ number: target - 1, confidence: 0.5 });
+            if (target < 18) predictions.push({ number: target + 1, confidence: 0.5 });
+        }
+
+        return { predictions, variance };
+    }
+
+    calculateVariance(array) {
+        const mean = array.reduce((a, b) => a + b, 0) / array.length;
+        return array.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / array.length;
+    }
+
+    calculateVariance(array) {
+        const mean = array.reduce((a, b) => a + b, 0) / array.length;
+        return array.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / array.length;
+    }
+
+    // Algorithm 18: Day of Week Pattern (NEW)
+    // Analyzes if certain numbers are "lucky" on specific days
+    dayPatternAnalysis() {
+        if (this.history.length < 20) return { predictions: [] };
+
+        const currentDay = new Date().getDay(); // 0-6
+        const dayData = {};
+
+        this.history.forEach(roll => {
+            if (roll.dateMetadata && roll.dateMetadata.weekDay === currentDay) {
+                dayData[roll.number] = (dayData[roll.number] || 0) + 1;
+            }
+        });
+
+        const predictions = [];
+        const totalForDay = Object.values(dayData).reduce((a, b) => a + b, 0);
+
+        if (totalForDay > 10) {
+            Object.entries(dayData).forEach(([num, count]) => {
+                const freq = count / totalForDay;
+                if (freq > 0.1) { // If number appears >10% of time on this day
+                    predictions.push({
+                        number: parseInt(num),
+                        confidence: freq * 2
+                    });
+                }
+            });
+        }
+
+        return { predictions, dayData };
+    }
+
     // Helper: Parse period number
     parsePeriod(periodString) {
         const cleaned = periodString.replace(/\s+/g, '');
@@ -750,7 +842,9 @@ class PredictionEngine {
                 evenCount: 0,
                 oddCount: 0,
                 avgNumber: 0,
-                frequency: {}
+                frequency: {},
+                hot: '-',
+                cold: '-'
             };
         }
 
@@ -770,6 +864,11 @@ class PredictionEngine {
             sum += roll.number;
         });
 
+        // Calculate Hot/Cold
+        const sortedFreq = Object.entries(frequency).sort((a, b) => b[1] - a[1]);
+        const hot = sortedFreq.length > 0 ? sortedFreq[0][0] : '-';
+        const cold = sortedFreq.length > 0 ? sortedFreq[sortedFreq.length - 1][0] : '-';
+
         return {
             total: this.history.length,
             bigCount,
@@ -777,7 +876,9 @@ class PredictionEngine {
             evenCount,
             oddCount,
             avgNumber: (sum / this.history.length).toFixed(2),
-            frequency
+            frequency,
+            hot,
+            cold
         };
     }
 

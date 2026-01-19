@@ -22,6 +22,13 @@ let auth = null;
 let db = null;
 
 function initializeFirebase() {
+    // Firebase disabled - no credentials configured
+    // Firebase disabled - no credentials configured
+    console.warn('⚠️ Sync Disabled: Add your Firebase keys in firebase-config.js to enable cloud sync.');
+    console.warn('Get keys from: https://console.firebase.google.com/');
+
+    /* UNCOMMENT THIS BLOCK AFTER ADDING YOUR FIREBASE CREDENTIALS
+    
     try {
         // Initialize Firebase
         firebaseApp = firebase.initializeApp(firebaseConfig);
@@ -58,74 +65,51 @@ function initializeFirebase() {
         console.error('❌ Firebase initialization failed:', error);
         return false;
     }
+    */
+
+    return false;
 }
 
 // Authentication functions
 const FirebaseAuth = {
     // Sign in with Google
     signInWithGoogle: async () => {
-        try {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            const result = await auth.signInWithPopup(provider);
-            return { success: true, user: result.user };
-        } catch (error) {
-            console.error('Google sign-in error:', error);
-            return { success: false, error: error.message };
-        }
+        console.warn('🔒 Firebase is disabled. Enable it first to use cloud sync.');
+        return { success: false, error: 'Firebase not configured. App works offline only.' };
     },
 
     // Sign in with email/password
     signInWithEmail: async (email, password) => {
-        try {
-            const result = await auth.signInWithEmailAndPassword(email, password);
-            return { success: true, user: result.user };
-        } catch (error) {
-            console.error('Email sign-in error:', error);
-            return { success: false, error: error.message };
-        }
+        console.warn('🔒 Firebase is disabled. Enable it first to use cloud sync.');
+        return { success: false, error: 'Firebase not configured. App works offline only.' };
     },
 
     // Sign up with email/password
     signUpWithEmail: async (email, password) => {
-        try {
-            const result = await auth.createUserWithEmailAndPassword(email, password);
-            return { success: true, user: result.user };
-        } catch (error) {
-            console.error('Email sign-up error:', error);
-            return { success: false, error: error.message };
-        }
+        console.warn('🔒 Firebase is disabled. Enable it first to use cloud sync.');
+        return { success: false, error: 'Firebase not configured. App works offline only.' };
     },
 
     // Sign in anonymously (for guests)
     signInAnonymously: async () => {
-        try {
-            const result = await auth.signInAnonymously();
-            return { success: true, user: result.user };
-        } catch (error) {
-            console.error('Anonymous sign-in error:', error);
-            return { success: false, error: error.message };
-        }
+        console.warn('🔒 Firebase is disabled. Enable it first to use cloud sync.');
+        return { success: false, error: 'Firebase not configured. App works offline only.' };
     },
 
     // Sign out
     signOut: async () => {
-        try {
-            await auth.signOut();
-            return { success: true };
-        } catch (error) {
-            console.error('Sign-out error:', error);
-            return { success: false, error: error.message };
-        }
+        console.warn('🔒 Firebase is disabled.');
+        return { success: true };
     },
 
     // Get current user
     getCurrentUser: () => {
-        return auth.currentUser;
+        return null;
     },
 
     // Check if user is signed in
     isSignedIn: () => {
-        return auth.currentUser !== null;
+        return false;
     }
 };
 

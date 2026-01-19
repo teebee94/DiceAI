@@ -10,9 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.ctrlKey || e.altKey || e.metaKey) return;
 
         const key = e.key.toLowerCase();
+        const app = window.app; // Access global app instance
+
+        if (!app) return; // Exit if app is not initialized
 
         // Number entry (3-9) - single digits
-        if (key >= '3' && key <= '9' && typeof app !== 'undefined') {
+        if (key >= '3' && key <= '9') {
             const num = parseInt(key);
             app.addNumber(num);
             e.preventDefault();
@@ -20,36 +23,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Actions
-        if (typeof app !== 'undefined') {
-            if (key === ' ') {
-                // Spacebar = Generate Prediction
-                app.generatePrediction();
+        if (key === ' ') {
+            // Spacebar = Generate Prediction
+            app.generatePrediction();
+            e.preventDefault();
+            console.log('Generated prediction via keyboard');
+        } else if (key === 'y') {
+            // Y = Mark as Correct
+            app.submitFeedback(true);
+            e.preventDefault();
+            console.log('Marked as correct via keyboard');
+        } else if (key === 'n') {
+            // N = Mark as Wrong
+            app.submitFeedback(false);
+            e.preventDefault();
+            console.log('Marked as wrong via keyboard');
+        } else if (key === 'e' && !e.shiftKey) {
+            // E = Export (without shift to avoid conflict)
+            app.exportData();
+            e.preventDefault();
+            console.log('Exported data via keyboard');
+        } else if (key === 'c' && e.shiftKey) {
+            // Shift+C = Toggle Competitive Mode
+            const toggle = document.getElementById('competitiveModeToggle');
+            if (toggle) {
+                toggle.checked = !toggle.checked;
+                toggle.dispatchEvent(new Event('change'));
                 e.preventDefault();
-                console.log('Generated prediction via keyboard');
-            } else if (key === 'y') {
-                // Y = Mark as Correct
-                app.submitFeedback(true);
-                e.preventDefault();
-                console.log('Marked as correct via keyboard');
-            } else if (key === 'n') {
-                // N = Mark as Wrong
-                app.submitFeedback(false);
-                e.preventDefault();
-                console.log('Marked as wrong via keyboard');
-            } else if (key === 'e' && !e.shiftKey) {
-                // E = Export (without shift to avoid conflict)
-                app.exportData();
-                e.preventDefault();
-                console.log('Exported data via keyboard');
-            } else if (key === 'c' && e.shiftKey) {
-                // Shift+C = Toggle Competitive Mode
-                const toggle = document.getElementById('competitiveModeToggle');
-                if (toggle) {
-                    toggle.checked = !toggle.checked;
-                    toggle.dispatchEvent(new Event('change'));
-                    e.preventDefault();
-                    console.log('Toggled competitive mode via keyboard');
-                }
+                console.log('Toggled competitive mode via keyboard');
             }
         }
     });

@@ -24,6 +24,7 @@ class DicePredictionApp {
         this.imageAnalyzer = new ImageAnalyzer();
         this.lastPrediction = null;
         this.pendingFeedback = false;
+        this.currentUploadResults = []; // Store current upload results
 
         // AI Insights
         this.aiInsights = new AIInsights(this.predictionEngine, this.learningEngine);
@@ -113,6 +114,23 @@ class DicePredictionApp {
         }
 
         this.init();
+
+        // Global Error Handler for Mobile debugging
+        window.onerror = (msg, url, lineNo, columnNo, error) => {
+            const errorContainer = document.createElement('div');
+            errorContainer.style.cssText = 'position: fixed; bottom: 0; left: 0; right: 0; background: rgba(220, 38, 38, 0.9); color: white; padding: 10px; z-index: 10000; font-size: 12px; font-family: monospace; overflow: auto; max-height: 50vh;';
+            errorContainer.innerHTML = `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <strong>⚠️ Application Error</strong>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white;">✕</button>
+                </div>
+                <div>${msg}</div>
+                <div style="opacity: 0.8; margin-top: 5px;">${url.split('/').pop()}:${lineNo}</div>
+            `;
+            document.body.appendChild(errorContainer);
+            console.error('Global Error:', msg, error);
+            return false;
+        };
     }
 
     // Get current timeframe data
@@ -160,6 +178,7 @@ class DicePredictionApp {
         this.createNumberPad();
         this.createHeatmap();
         this.addThemeSelector(); // Add theme selector
+        if (this.aiChat) this.aiChat.render();
     }
 
     // Add theme selector to UI (NEW!)
@@ -228,6 +247,26 @@ class DicePredictionApp {
             this.handleImageUpload(files);
             fileInput.value = '';
         });
+
+        // Help Modal Listeners
+        const helpBtn = document.getElementById('helpBtn');
+        const helpModal = document.getElementById('helpModal');
+        const closeHelpBtn = document.getElementById('closeHelpBtn');
+
+        if (helpBtn && helpModal && closeHelpBtn) {
+            helpBtn.addEventListener('click', () => {
+                helpModal.style.display = 'block';
+            });
+            closeHelpBtn.addEventListener('click', () => {
+                helpModal.style.display = 'none';
+            });
+            // Close on outside click
+            window.addEventListener('click', (e) => {
+                if (e.target === helpModal) {
+                    helpModal.style.display = 'none';
+                }
+            });
+        }
 
         // Import/Export
         const importInput = document.getElementById('importInput');
@@ -368,11 +407,14 @@ class DicePredictionApp {
 
     // Add number to history
     addNumber(number) {
+        let isPredictedCorrectly = null;
+
         if (this.pendingFeedback && this.lastPrediction) {
             const isCorrect = this.lastPrediction.number === number;
             this.learningEngine.recordFeedback(this.lastPrediction, number, isCorrect);
             this.pendingFeedback = false;
             document.getElementById('feedbackButtons').style.display = 'none';
+            isPredictedCorrectly = isCorrect;
         }
 
         const periodInput = document.getElementById('periodInput');
@@ -401,7 +443,8 @@ class DicePredictionApp {
             isEven: number % 2 === 0,
             period: period,
             dice: (dice1 && dice2 && dice3) ? [dice1, dice2, dice3] : null,
-            timeframe: this.currentTimeframe
+            timeframe: this.currentTimeframe,
+            predictedCorrectly: isPredictedCorrectly
         };
 
         this.predictionEngine.addRoll(number);
@@ -459,6 +502,14 @@ class DicePredictionApp {
 
         // Show AI explanation (NEW!)
         this.showPredictionExplanation(prediction);
+
+        // Update Algorithm Feed (NEW)
+        const algoFeed = document.getElementById('algorithmFeedContent');
+        const feedCard = document.getElementById('algorithmFeedCard');
+        if (algoFeed && this.advancedAI) {
+            algoFeed.innerHTML = this.advancedAI.generateAlgorithmBreakdown(prediction);
+            feedCard.style.display = 'block';
+        }
     }
 
     // Submit feedback
@@ -515,7 +566,36 @@ class DicePredictionApp {
         });
 
         try {
-            const { results, errors, skipped } = await this.imageAnalyzer.processBatch(files);
+            // Process sequential with delay to prevent UI freeze
+            const results = [];
+            const errors = [];
+            let skipped = 0;
+
+            // Optimization: Process in chunks
+            for (let i = 0; i < files.length; i++) {
+                // Yield to main thread every image
+                await new Promise(resolve => setTimeout(resolve, 50));
+
+                const result = await this.imageAnalyzer.processImage(files[i]);
+
+                if (result.success && result.gameResults.length > 0) {
+                    result.gameResults.forEach(game => {
+                        results.push(game);
+                    });
+                } else {
+                    errors.push({
+                        fileName: result.fileName,
+                        error: result.error || 'No game data found'
+                    });
+                }
+
+                // Update UI
+                const progress = Math.round(((i + 1) / files.length) * 100);
+                progressFill.style.width = `${progress}%`;
+                statusText.textContent = `🔄 Processing ${i + 1}/${files.length}...`;
+            }
+
+            this.currentUploadResults = results;
 
             console.log('📊 Upload Results:', { results, errors, skipped });
 
@@ -537,8 +617,16 @@ class DicePredictionApp {
         }
     }
 
+    // Remove extracted item
+    removeExtractedItem(index) {
+        if (this.currentUploadResults && this.currentUploadResults[index]) {
+            this.currentUploadResults.splice(index, 1);
+            this.displayExtractedNumbers(this.currentUploadResults);
+        }
+    }
+
     // Display extracted numbers from images
-    displayExtractedNumbers(results, errors, skipped = 0) {
+    displayExtractedNumbers(results = this.currentUploadResults, errors = [], skipped = 0) {
         const container = document.getElementById('extractedNumbers');
         container.innerHTML = '';
 
@@ -570,7 +658,7 @@ class DicePredictionApp {
             title.textContent = `✓ Extracted ${results.length} unique results` + (skipped > 0 ? ` (${skipped} duplicates skipped)` : '');
             wrapper.appendChild(title);
 
-            results.forEach(game => {
+            results.forEach((game, idx) => {
                 const item = document.createElement('div');
                 item.style.cssText = 'margin-bottom: var(--space-sm); padding: var(--space-sm); background: var(--color-bg-card); border-radius: var(--radius-sm);';
 
@@ -578,10 +666,13 @@ class DicePredictionApp {
                 const periodDisplay = game.period ? ` • Period: ...${game.period.slice(-6)}` : ' • No Period';
 
                 item.innerHTML = `
-                    <div style="display: flex; gap: var(--space-sm); align-items: center;">
-                        <span class="badge badge-${game.isBig ? 'error' : 'success'}" style="font-size: var(--font-size-lg);">${diceDisplay}${game.sum}</span>
-                        <span class="badge badge-${game.isEven ? 'primary' : 'warning'}">${game.isEven ? 'EVEN' : 'ODD'}</span>
-                        <span style="font-size: var(--font-size-sm); color: var(--color-text-tertiary);">${periodDisplay}</span>
+                    <div style="display: flex; gap: var(--space-sm); align-items: center; justify-content: space-between;">
+                        <div style="display: flex; gap: var(--space-sm); align-items: center;">
+                            <span class="badge badge-${game.isBig ? 'error' : 'success'}" style="font-size: var(--font-size-lg);">${diceDisplay}${game.sum}</span>
+                            <span class="badge badge-${game.isEven ? 'primary' : 'warning'}">${game.isEven ? 'EVEN' : 'ODD'}</span>
+                            <span style="font-size: var(--font-size-sm); color: var(--color-text-tertiary);">${periodDisplay}</span>
+                        </div>
+                        <button onclick="app.removeExtractedItem(${idx})" style="background: none; border: none; cursor: pointer;">❌</button>
                     </div>
                 `;
                 wrapper.appendChild(item);
@@ -590,8 +681,10 @@ class DicePredictionApp {
             const addButton = document.createElement('button');
             addButton.className = 'btn btn-success mt-md';
             addButton.textContent = `Add All ${results.length} to History`;
+            addButton.className = 'btn btn-success mt-md';
+            addButton.textContent = `Add All ${results.length} to History`;
             addButton.onclick = () => {
-                results.forEach(game => {
+                this.currentUploadResults.forEach(game => {
                     this.predictionEngine.addRoll(game.sum);
                     const entry = {
                         number: game.sum,
@@ -722,6 +815,12 @@ class DicePredictionApp {
             this.learningEngine.feedbackHistory.length > 0 ? `${accuracy.toFixed(1)}%` : '--%';
         document.getElementById('statBig').textContent = stats.bigCount;
         document.getElementById('statSmall').textContent = stats.smallCount;
+
+        const hotEl = document.getElementById('statHot');
+        if (hotEl) hotEl.textContent = stats.hot;
+
+        const coldEl = document.getElementById('statCold');
+        if (coldEl) coldEl.textContent = stats.cold;
     }
 
     // Update heatmap
@@ -767,11 +866,25 @@ class DicePredictionApp {
                     <td>${diceDisplay}</td>
                     <td><span class="badge badge-${entry.isBig ? 'error' : 'success'}">${entry.isBig ? 'Big' : 'Small'}</span></td>
                     <td><span class="badge badge-${entry.isEven ? 'primary' : 'warning'}">${entry.isEven ? 'Even' : 'Odd'}</span></td>
-                    <td>-</td>
-                    <td style="font-size: var(--font-size-sm); color: var(--color-text-tertiary);">${this.formatTime(entry.timestamp)}</td>
+                    <td>
+                        ${entry.predictedCorrectly === true ? '✅' : entry.predictedCorrectly === false ? '❌' : '-'}
+                    </td>
+                    <td style="font-size: var(--font-size-sm); color: var(--color-text-tertiary);">
+                        ${this.formatDateDetailed(entry.timestamp)}
+                    </td>
                 </tr>
             `;
         }).join('');
+    }
+
+    // Helper: detailed date format for history
+    formatDateDetailed(timestamp) {
+        if (!timestamp) return '-';
+        const date = new Date(timestamp);
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const dayName = days[date.getDay()];
+        const time = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return `${dayName} ${time}`;
     }
 
     // Update learning status
@@ -990,7 +1103,7 @@ class DicePredictionApp {
 }
 
 // Initialize app when DOM is ready
-let app;
+// Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    app = new DicePredictionApp();
+    window.app = new DicePredictionApp();
 });

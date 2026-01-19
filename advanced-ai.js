@@ -189,6 +189,73 @@ class AdvancedAI {
         return 'Low';
     }
 
+    // Generate detailed algorithm breakdown
+    generateAlgorithmBreakdown(prediction) {
+        if (!prediction || !prediction.algorithmResults) return '<div class="text-center text-muted">No details available</div>';
+
+        const results = Object.entries(prediction.algorithmResults)
+            .filter(([_, res]) => res && res.predictions && res.predictions.length > 0)
+            .map(([algoKey, res]) => {
+                const best = res.predictions.sort((a, b) => b.confidence - a.confidence)[0];
+                const algoName = this.predictionEngine.algorithms[algoKey]?.name || algoKey;
+                return {
+                    name: algoName,
+                    number: best.number,
+                    confidence: Math.round(best.confidence * 100),
+                    isBig: best.number >= 11,
+                    isEven: best.number % 2 === 0
+                };
+            })
+            .sort((a, b) => b.confidence - a.confidence);
+
+        if (results.length === 0) return '<div class="text-center text-muted">No algorithm consensus found</div>';
+
+        return `
+            <div style="overflow-x: auto; max-height: 300px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: var(--font-size-sm);">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--color-border); text-align: left;">
+                            <th style="padding: var(--space-sm); color: var(--color-text-secondary);">Algorithm</th>
+                            <th style="padding: var(--space-sm); color: var(--color-text-secondary);">Pred</th>
+                            <th style="padding: var(--space-sm); color: var(--color-text-secondary);">Conf</th>
+                            <th style="padding: var(--space-sm); color: var(--color-text-secondary);">Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${results.map(r => `
+                            <tr style="border-bottom: 1px solid var(--color-border);">
+                                <td style="padding: var(--space-sm); font-weight: 600;">${r.name}</td>
+                                <td style="padding: var(--space-sm); font-weight: 700;">
+                                    <span style="color: ${r.isBig ? 'var(--color-error)' : 'var(--color-success)'}">${r.number}</span>
+                                </td>
+                                <td style="padding: var(--space-sm);">
+                                    <div style="display: flex; align-items: center; gap: var(--space-xs);">
+                                        <div style="width: 40px; height: 4px; background: rgba(255,255,255,0.1); border-radius: var(--radius-full);">
+                                            <div style="width: ${r.confidence}%; height: 100%; background: ${this.getConfidenceColor(r.confidence)}; border-radius: var(--radius-full);"></div>
+                                        </div>
+                                        <span style="font-size: 0.75rem;">${r.confidence}%</span>
+                                    </div>
+                                </td>
+                                <td style="padding: var(--space-sm);">
+                                    <span style="font-size: 0.7rem; padding: 2px 4px; border-radius: 4px; background: ${r.isBig ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)'}; color: ${r.isBig ? '#f87171' : '#34d399'};">
+                                        ${r.isBig ? 'BIG' : 'SM'}
+                                    </span>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    getConfidenceColor(conf) {
+        if (conf >= 80) return 'var(--color-success)';
+        if (conf >= 60) return 'var(--color-primary)';
+        if (conf >= 40) return 'var(--color-warning)';
+        return 'var(--color-error)';
+    }
+
     // Create visual explanation card
     createExplanationCard(prediction) {
         const explanation = this.explainPrediction(prediction);

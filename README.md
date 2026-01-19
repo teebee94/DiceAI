@@ -5,6 +5,9 @@
 ## Features
 
 - 🤖 **AI-Powered Analysis** - Smart pattern detection and strategy suggestions
+- 🎤 **Voice Commands** - Hands-free interaction ("Predict", "Accuracy", etc.)
+- 💬 **AI Assistant** - Chat interface for data management
+- 🔥 **Hot/Cold Stats** - Track most/least frequent numbers
 - 🔮 **16 Advanced Algorithms** - Markov Chain, Bayesian, time-based patterns
 - 🧠 **Self-Learning Engine** - Adapts based on your feedback
 - 📷 **OCR Image Analysis** - Bulk data entry from screenshots

@@ -66,6 +66,32 @@ class VoiceCommands {
         if (this.recognition && this.isListening) {
             this.recognition.stop();
             this.isListening = false;
+            this.updateUI(false);
+        }
+    }
+
+    // Toggle listening
+    toggleListening() {
+        if (this.isListening) {
+            this.stopListening();
+        } else {
+            this.startListening();
+        }
+    }
+
+    // Update UI state
+    updateUI(listening) {
+        const btn = document.getElementById('voiceCommandBtn');
+        if (btn) {
+            if (listening) {
+                btn.classList.add('listening');
+                btn.style.background = 'var(--color-error)';
+                btn.innerHTML = '🛑';
+            } else {
+                btn.classList.remove('listening');
+                btn.style.background = 'var(--color-accent)';
+                btn.innerHTML = '🎤';
+            }
         }
     }
 
@@ -126,6 +152,24 @@ class VoiceCommands {
         // Help
         else if (command.includes('help') || command.includes('what can you do')) {
             this.speak('You can ask me for predictions, top three numbers, betting suggestions, accuracy, streaks, best time to play, or data cleanup.');
+        }
+        // Hot/Cold Analysis (NEW)
+        else if (command.includes('hot') || command.includes('cold')) {
+            const stats = this.app.predictionEngine.getStatistics();
+            this.speak(`The hot number is ${stats.hot}. The cold number is ${stats.cold}.`);
+        }
+        // Deep Analysis (NEW)
+        else if (command.includes('analyze') || command.includes('analysis')) {
+            const history = this.app.predictionEngine.history.slice(-10);
+            if (history.length < 5) {
+                this.speak("Not enough data for deep analysis. Add more numbers first.");
+            } else {
+                const bigs = history.filter(h => h.isBig).length;
+                const evens = history.filter(h => h.isEven).length;
+                const trend = bigs > 5 ? "Big numbers" : "Small numbers";
+                const parity = evens > 5 ? "Even numbers" : "Odd numbers";
+                this.speak(`Analysis of last 10 rounds: ${trend} are trending. ${parity} are dominating.`);
+            }
         }
         // Unknown
         else {

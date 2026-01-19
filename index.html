@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="AI-powered dice prediction system with self-learning capabilities">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="manifest" href="manifest.json">
 
     <!-- Force cache refresh -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -13,18 +15,29 @@
 
     <title>🎲 DiceAI | Advanced Prediction System</title>
 
-    <link rel="stylesheet" href="styles.css?v=20260114">
+    <link rel="stylesheet" href="styles.css?v=20260116b">
 
-    <!-- Tesseract.js for OCR -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed: ', err));
+            });
+        }
+    </script>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- Tesseract.js for OCR (Deferred) -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js" defer></script>
 
-    <!-- Chart.js for Data Visualization -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Firebase SDK (Deferred) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js" defer></script>
+
+    <!-- Chart.js for Data Visualization (Deferred) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
 </head>
 
 <body>
@@ -34,9 +47,9 @@
             <h1 class="header-title">🎲 DiceAI</h1>
             <p class="header-subtitle">Advanced Self-Learning Prediction System</p>
 
-            <!-- Auth & Sync Status -->
+            <!-- Auth & Sync Status (Hidden - Firebase Disabled) -->
             <div
-                style="margin-top: var(--space-md); display: flex; gap: var(--space-md); align-items: center; justify-content: center; flex-wrap: wrap;">
+                style="margin-top: var(--space-md); display: none; gap: var(--space-md); align-items: center; justify-content: center; flex-wrap: wrap;">
                 <button id="authButton" class="btn btn-sm"
                     style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);"
                     onclick="toggleAuthModal()">🔒 Sign In</button>
@@ -64,6 +77,18 @@
                         id="nextPeriodNumber">--</span>
                 </div>
             </div>
+
+            <!-- Theme Selector (Moved to Header) -->
+            <div id="themeSelectorContainer"
+                style="margin-top: var(--space-md); display: flex; justify-content: center; gap: var(--space-md);">
+                <div id="themeSelector" style="display: flex; align-items: center; gap: var(--space-sm);"></div>
+
+                <!-- Voice Command Button -->
+                <button id="voiceCommandBtn" class="btn btn-sm" onclick="app.voiceCommands.toggleListening()"
+                    style="background: var(--color-accent); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: all 0.3s;">
+                    🎤
+                </button>
+            </div>
         </div>
     </header>
 
@@ -80,6 +105,11 @@
                 <button class="btn btn-primary btn-sm" onclick="app.generatePrediction()">
                     Generate Prediction
                 </button>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" id="voiceCommandBtn" title="Voice Commands">🎤</button>
+                <button class="icon-btn" id="themeToggle" title="Toggle Theme">🌙</button>
+                <button class="icon-btn" id="helpBtn" title="Help & Guide">ℹ️</button>
             </div>
             <div class="card-body">
                 <div class="prediction-display">
@@ -121,10 +151,7 @@
                                 style="width: 100%; accent-color: var(--color-primary);">
                         </div>
 
-                        <!-- Theme Selector (NEW) -->
-                        <div id="themeSelector"
-                            style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--color-border);">
-                        </div>
+
                     </div>
                 </div>
 
@@ -150,6 +177,19 @@
             </div>
             <div class="card-body">
                 <div id="predictionExplanation"></div>
+            </div>
+        </div>
+
+        <!-- Algorithm Live Feed (NEW) -->
+        <div class="card" id="algorithmFeedCard" style="display: none; animation-delay: 0.1s;">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <span class="card-icon">🧠</span>
+                    Live Algorithm Consensus
+                </h3>
+            </div>
+            <div class="card-body">
+                <div id="algorithmFeedContent"></div>
             </div>
         </div>
 
@@ -257,6 +297,14 @@
                         <div class="stat-item">
                             <div class="stat-value" id="statSmall">0</div>
                             <div class="stat-label">Small (3-10)</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="statHot">-</div>
+                            <div class="stat-label">Hot 🔥</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="statCold">-</div>
+                            <div class="stat-label">Cold 🧊</div>
                         </div>
                     </div>
                 </div>
@@ -393,28 +441,64 @@
         </div>
     </div>
 
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; overflow-y: auto;">
+        <div class="modal-content"
+            style="background: var(--color-bg-secondary); margin: 5% auto; padding: 20px; border-radius: 12px; width: 90%; max-width: 600px; color: var(--color-text-primary);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;">DiceAI Guide</h2>
+                <button id="closeHelpBtn"
+                    style="background: none; border: none; font-size: 24px; color: var(--color-text-primary); cursor: pointer;">&times;</button>
+            </div>
+            <div id="helpContent" style="line-height: 1.6;">
+                <!-- Content will be injected from USER_GUIDE.md content logic -->
+                <h3>🧠 AI Date Brain</h3>
+                <p>The system automatically tracks <strong>Day & Time</strong> patterns:</p>
+                <ul>
+                    <li><strong>Weekly Brain:</strong> Learns if certain numbers hit on specific days (e.g., "Lucky
+                        Fridays").</li>
+                    <li><strong>Hourly Brain:</strong> Learns Morning vs. Night trends.</li>
+                </ul>
+                <div style="background: var(--color-bg-tertiary); padding: 10px; border-radius: 8px; margin: 10px 0;">
+                    <strong>Tip:</strong> Upload screenshots on the <em>same day</em> you took them for best accuracy!
+                </div>
+
+                <h3>🎤 Voice Commands</h3>
+                <ul>
+                    <li><strong>"What is hot?":</strong> Hear hot/cold numbers.</li>
+                    <li><strong>"Analyze":</strong> Get a deep trend analysis.</li>
+                    <li><strong>"Predict":</strong> Generate next prediction.</li>
+                </ul>
+
+                <h3>📤 Data Format</h3>
+                <p>We analyze: Winning Number (3-18), Big/Small, Even/Odd, and Date/Time.</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
-    <script src="data-manager.js?v=20260114"></script>
-    <script src="ai-chat-assistant.js?v=20260114"></script>
-    <script src="analytics-engine.js?v=20260114"></script>
-    <script src="chart-visualizer.js?v=20260114"></script>
-    <script src="prediction-tracker.js?v=20260114"></script>
-    <script src="advanced-predictor.js?v=20260114"></script>
-    <script src="notification-manager.js?v=20260114"></script>
-    <script src="automation-engine.js?v=20260114"></script>
-    <script src="voice-commands.js?v=20260114"></script>
-    <script src="data-exporter.js?v=20260114"></script>
-    <script src="firebase-config.js?v=20260114"></script>
-    <script src="firebase-sync.js?v=20260114"></script>
-    <script src="period-parser.js?v=20260114"></script>
-    <script src="prediction-engine.js?v=20260114"></script>
-    <script src="learning-engine.js?v=20260114"></script>
-    <script src="image-analyzer.js?v=20260114"></script>
-    <script src="ai-insights.js?v=20260114"></script>
-    <script src="theme-manager.js?v=20260114"></script>
-    <script src="advanced-ai.js?v=20260114"></script>
-    <script src="app.js?v=20260114"></script>
-    <script src="keyboard-shortcuts.js?v=20260114"></script>
+    <script src="data-manager.js?v=20260116b"></script>
+    <script src="ai-chat-assistant.js?v=20260116b"></script>
+    <script src="analytics-engine.js?v=20260116b"></script>
+    <script src="chart-visualizer.js?v=20260116b"></script>
+    <script src="prediction-tracker.js?v=20260116b"></script>
+    <script src="advanced-predictor.js?v=20260116b"></script>
+    <script src="notification-manager.js?v=20260116b"></script>
+    <script src="automation-engine.js?v=20260116b"></script>
+    <script src="voice-commands.js?v=20260116b"></script>
+    <script src="data-exporter.js?v=20260116b"></script>
+    <script src="firebase-config.js?v=20260116b"></script>
+    <script src="firebase-sync.js?v=20260116b"></script>
+    <script src="period-parser.js?v=20260116b"></script>
+    <script src="prediction-engine.js?v=20260116b"></script>
+    <script src="learning-engine.js?v=20260116b"></script>
+    <script src="image-analyzer.js?v=20260116b"></script>
+    <script src="ai-insights.js?v=20260116b"></script>
+    <script src="theme-manager.js?v=20260116b"></script>
+    <script src="advanced-ai.js?v=20260116b"></script>
+    <script src="app.js?v=20260116b"></script>
+    <script src="keyboard-shortcuts.js?v=20260116b"></script>
 
     <script>
         // Initialize Firebase when page loads
@@ -504,6 +588,7 @@
             }
         }
     </script>
+    <div id="chat-widget-container"></div>
 </body>
 
 </html>

@@ -118,15 +118,20 @@ class ThemeManager {
 
     // Create theme selector UI
     createThemeSelector() {
-        const container = document.createElement('div');
-        container.style.cssText = 'margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--color-border);';
-
-        const label = document.createElement('label');
-        label.style.cssText = 'display: block; margin-bottom: var(--space-sm); color: var(--color-text-secondary); font-size: var(--font-size-sm); font-weight: 600;';
-        label.textContent = '🎨 Color Theme';
-
         const select = document.createElement('select');
-        select.style.cssText = 'width: 100%; padding: var(--space-sm); border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg-tertiary); color: var(--color-text); font-size: var(--font-size-base);';
+        select.style.cssText = `
+            background: rgba(30, 36, 56, 0.6);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            padding: 4px 8px;
+            font-size: var(--font-size-sm);
+            outline: none;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        `;
+        select.onmouseover = () => select.style.borderColor = 'var(--color-primary)';
+        select.onmouseout = () => select.style.borderColor = 'var(--color-border)';
 
         this.getThemes().forEach(theme => {
             const option = document.createElement('option');
@@ -140,7 +145,15 @@ class ThemeManager {
             this.applyTheme(e.target.value);
         });
 
-        container.appendChild(label);
+        const icon = document.createElement('span');
+        icon.textContent = '🎨';
+        icon.style.marginRight = 'var(--space-xs)';
+        icon.title = 'Change Theme';
+
+        const container = document.createElement('div');
+        container.style.display = 'flex';
+        container.style.alignItems = 'center';
+        container.appendChild(icon);
         container.appendChild(select);
 
         return container;

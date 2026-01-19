@@ -18,7 +18,14 @@ class AIChatAssistant {
         let response;
 
         // Match command patterns
-        if (this.matchPattern(input, ['fix', 'series', 'number'])) {
+
+        // 1. Delete specific series (e.g. "delete 927", "remove #927")
+        const deleteMatch = input.match(/(?:delete|remove)\s+(?:#)?(\d+)/);
+        if (deleteMatch) {
+            const seriesNum = parseInt(deleteMatch[1]);
+            response = await this.handleDeleteSeries(seriesNum);
+        }
+        else if (this.matchPattern(input, ['fix', 'series'])) {
             response = await this.handleFixSeries();
         }
         else if (this.matchPattern(input, ['remove', 'duplicate']) || this.matchPattern(input, ['delete', 'duplicate'])) {
@@ -27,7 +34,7 @@ class AIChatAssistant {
         else if (this.matchPattern(input, ['find', 'duplicate'])) {
             response = await this.handleFindDuplicates();
         }
-        else if (this.matchPattern(input, ['sort']) || this.matchPattern(input, ['order'])) {
+        else if (this.matchPattern(input, ['sort']) || this.matchPattern(input, ['order']) || this.matchPattern(input, ['rearrange'])) {
             response = await this.handleSort();
         }
         else if (this.matchPattern(input, ['validate']) || this.matchPattern(input, ['check', 'data'])) {
@@ -56,6 +63,12 @@ class AIChatAssistant {
     // Pattern matching helper
     matchPattern(input, keywords) {
         return keywords.every(keyword => input.includes(keyword));
+    }
+
+    // Handle delete series
+    async handleDeleteSeries(seriesNum) {
+        const result = this.dataManager.deleteBySeries(seriesNum);
+        return result.message;
     }
 
     // Handle fix series command
@@ -211,6 +224,87 @@ Type any command to get started!`;
         }
 
         return `🤔 I didn't understand "${input}". Type "help" to see available commands!`;
+    }
+
+    // Render Chat UI
+    render() {
+        if (document.getElementById('chat-widget')) return;
+
+        const container = document.getElementById('chat-widget-container');
+        if (!container) return;
+
+        container.innerHTML = `
+            <div id="chat-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; font-family: var(--font-family-base);">
+                <!-- Toggle Button -->
+                <button id="chat-toggle-btn" onclick="app.aiChat.toggleChat()" 
+                    style="width: 60px; height: 60px; border-radius: 50%; background: var(--gradient-primary); border: none; box-shadow: var(--shadow-lg); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
+                    <span style="font-size: 30px;">💬</span>
+                </button>
+
+                <!-- Chat Window -->
+                <div id="chat-window" style="display: none; position: absolute; bottom: 80px; right: 0; width: 350px; height: 500px; background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); flex-direction: column; overflow: hidden;">
+                    <!-- Header -->
+                    <div style="padding: var(--space-md); background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin: 0; font-size: var(--font-size-lg); font-weight: 600; color: var(--color-text);">🤖 AI Assistant</h3>
+                        <button onclick="app.aiChat.toggleChat()" style="background: none; border: none; color: var(--color-text-secondary); cursor: pointer; font-size: 1.2rem;">×</button>
+                    </div>
+
+                    <!-- Messages -->
+                    <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: var(--space-md); display: flex; flex-direction: column; gap: var(--space-sm);">
+                        <div style="background: var(--color-bg-tertiary); padding: var(--space-sm) var(--space-md); border-radius: var(--radius-md); align-self: flex-start; max-width: 80%; color: var(--color-text);">
+                            Hello! I can help you manage your data, find duplicates, or fix series issues. Just ask!
+                        </div>
+                    </div>
+
+                    <!-- Input -->
+                    <div style="padding: var(--space-md); border-top: 1px solid var(--color-border); display: flex; gap: var(--space-sm);">
+                        <input type="text" id="chat-input" placeholder="Type a command..." 
+                            style="flex: 1; padding: var(--space-sm); border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-bg-primary); color: var(--color-text);"
+                            onkeypress="if(event.key === 'Enter') app.aiChat.sendMessage()">
+                        <button onclick="app.aiChat.sendMessage()" class="btn btn-primary btn-sm">➤</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    toggleChat() {
+        const window = document.getElementById('chat-window');
+        const isVisible = window.style.display === 'flex';
+        window.style.display = isVisible ? 'none' : 'flex';
+    }
+
+    async sendMessage() {
+        const input = document.getElementById('chat-input');
+        const message = input.value.trim();
+        if (!message) return;
+
+        // Add user message
+        this.addMessageToUI(message, 'user');
+        input.value = '';
+
+        // Process command
+        const response = await this.processCommand(message);
+
+        // Add AI response
+        this.addMessageToUI(response, 'assistant');
+    }
+
+    addMessageToUI(text, role) {
+        const container = document.getElementById('chat-messages');
+        const div = document.createElement('div');
+        div.style.cssText = `
+            padding: var(--space-sm) var(--space-md); 
+            border-radius: var(--radius-md); 
+            max-width: 80%; 
+            word-wrap: break-word;
+            ${role === 'user' ?
+                'align-self: flex-end; background: var(--color-primary); color: white;' :
+                'align-self: flex-start; background: var(--color-bg-tertiary); color: var(--color-text);'}
+        `;
+        div.innerText = text;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
     }
 
     // Get conversation history

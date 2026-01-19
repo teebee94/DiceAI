@@ -56,6 +56,9 @@ class AdvancedPredictor {
         // Pattern matching
         if (this.matchesRecentPattern(number)) score += 15;
 
+        // Complex patterns (Zig-Zag, etc)
+        if (this.detectComplexPatterns(number)) score += 20;
+
         // Hot/cold analysis
         const lastOccurrence = this.engine.history.lastIndexOf(number);
         const recency = this.engine.history.length - lastOccurrence;
@@ -99,6 +102,42 @@ class AdvancedPredictor {
         const recentEven = recent[recent.length - 1] % 2 === 0;
 
         return (isBig === recentBig) && (isEven === recentEven);
+    }
+
+    // Detect complex patterns (Zig-Zag, Double-Double)
+    detectComplexPatterns(number) {
+        const history = this.engine.history.slice(-6);
+        if (history.length < 4) return false;
+
+        const isBig = number >= 11;
+        const last1 = history[history.length - 1].isBig;
+        const last2 = history[history.length - 2].isBig;
+        const last3 = history[history.length - 3].isBig;
+
+        // Zig-Zag Pattern (Big-Small-Big-Small...)
+        // If history is B-S-B, and we predict S, it matches zig-zag
+        if (last1 !== last2 && last2 !== last3) {
+            // Pattern logic B-S-B -> expect S (opposite of last1)
+            if (isBig !== last1) return 'Zig-Zag';
+        }
+
+        // Double-Double (BB-SS-BB...)
+        if (last1 === last2 && last2 !== last3) {
+            // Pattern logic BB-S... -> expect S
+            if (isBig === last1) return 'Double-Double';
+        }
+
+        return false;
+    }
+
+    // Check if we need to enter "Learning Mode" (Conservative)
+    isLearningMode() {
+        // If last 3 predictions were wildly wrong, be conservative
+        // (Mock implementation as we don't store prediction accuracy in engine directly yet)
+        if (this.engine.performance && this.engine.performance.overallAccuracy < 0.4) {
+            return true;
+        }
+        return false;
     }
 
     // Get reasoning for why this number was predicted

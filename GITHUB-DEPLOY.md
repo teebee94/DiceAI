@@ -1,86 +1,59 @@
-# GitHub Pages Deployment Guide
+# How to Launch on Android 🚀
 
-## Quick Deploy to GitHub Pages
+To get the app working on your phone as a real app, we need to put it online (Hosting). The easiest and free way is **GitHub Pages**.
 
-Your repository is ready! Follow these steps to deploy:
+## Phase 1: Go Online (Computer)
 
-### Step 1: Create GitHub Repository
+### 1. Create a Repository
+1.  Log in to [GitHub.com](https://github.com/new).
+2.  Repository name: `dice-ai-app`
+3.  Public/Private: **Public** (required for free hosting).
+4.  Click **Create repository**.
 
-1. Go to https://github.com/new
-2. Repository name: `DiceAI-Web` (or any name)
-3. Description: "AI-powered dice prediction system"
-4. Set to **Public** (required for free GitHub Pages)
-5. Click **"Create repository"**
-
-### Step 2: Push Code to GitHub
-
-Run these commands in PowerShell:
+### 2. Push Your Code
+Copy and paste these commands into your terminal one by one:
 
 ```powershell
-cd "c:\Users\vansh\OneDrive\Desktop\New folder (2)\DiceAI-Web"
+# 1. Initialize Git
+git init
+git add .
+git commit -m "Deploy to Android"
 
-# Add your GitHub username here
-git remote add origin https://github.com/YOUR_USERNAME/DiceAI-Web.git
+# 2. Link to GitHub (REPLACE LINK below with your actual repo link!)
+git remote add origin https://github.com/YOUR_USERNAME/dice-ai-app.git
 
-# Push code
+# 3. Upload
 git branch -M main
 git push -u origin main
 ```
 
-### Step 3: Enable GitHub Pages
+### 3. Turn on the Website
+1.  Go to your new repository on GitHub.
+2.  Click **Settings** (top tab) -> **Pages** (left menu).
+3.  Under "Source", change `None` to **`main`**.
+4.  Click **Save**.
+5.  Wait 1 minute. Refresh the page until you see a link like: `https://yourname.github.io/dice-ai-app/`
 
-1. Go to your repository on GitHub
-2. Click **Settings** tab
-3. Click **Pages** in left sidebar
-4. Under "Source", select **main** branch
-5. Click **Save**
+---
 
-### Step 4: Access Your Live Site
+## Phase 2: Install on Android (Phone)
 
-After 1-2 minutes, your app will be live at:
-```
-https://YOUR_USERNAME.github.io/DiceAI-Web/
-```
+### 1. Open in Chrome
+1.  Send that link to your phone (email/WhatsApp it to yourself).
+2.  Open it in **Google Chrome**.
 
-## ✨ What You Get
+### 2. Add to Home Screen
+1.  Tap the **3 dots** (menu) in the top right.
+2.  Tap **"Add to Home Screen"** or **"Install DiceAI"**.
+3.  Tap **Install**.
 
-**Access from anywhere:**
-- ✅ No need to run local server
-- ✅ Works on any device with internet
-- ✅ Share with friends via link
-- ✅ Free SSL (https://)
-- ✅ Automatic updates when you push code
+### 3. Use it!
+*   The app will now appear on your home screen like a native Android app.
+*   It works fullscreen (no browser bar).
+*   It works offline.
 
-**Important Notes:**
-- Data is still stored locally (localStorage) on each device
-- Export/import to sync between devices
-- App works offline after first load (PWA-ready)
+---
 
-## Alternative: Keep Using Local Server
-
-If you prefer local-only access:
-- Keep running: `python -m http.server 8080`
-- Access locally: `http://localhost:8080`
-- Access on network: `http://10.150.1.93:8080`
-
-## Your Repository Status
-
-✅ Git initialized
-✅ All files committed
-✅ Ready to push
-
-**Total files:** 12
-- index.html
-- styles.css
-- app.js
-- prediction-engine.js
-- learning-engine.js  
-- image-analyzer.js
-- ai-insights.js (NEW!)
-- period-parser.js
-- keyboard-shortcuts.js
-- README.md
-- DEPLOYMENT.md
-- ENHANCEMENTS.md
-
-**Ready to go live! 🚀**
+## Troubleshooting
+*   **"Site not found 404":** Wait 2 more minutes and refresh. It takes time to build.
+*   **"Install" button missing:** Reload the page once. Make sure you are using Chrome.
