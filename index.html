@@ -78,16 +78,23 @@
                 </div>
             </div>
 
-            <!-- Theme Selector (Moved to Header) -->
+            <!-- Header Actions -->
             <div id="themeSelectorContainer"
                 style="margin-top: var(--space-md); display: flex; justify-content: center; gap: var(--space-md);">
-                <div id="themeSelector" style="display: flex; align-items: center; gap: var(--space-sm);"></div>
 
-                <!-- Voice Command Button -->
-                <button id="voiceCommandBtn" class="btn btn-sm" onclick="app.voiceCommands.toggleListening()"
-                    style="background: var(--color-accent); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: all 0.3s;">
+                <!-- Voice -->
+                <button id="voiceCommandBtn" class="icon-btn" onclick="app.voiceCommands.toggleListening()"
+                    title="Voice Commands (Mic)">
                     🎤
                 </button>
+
+                <!-- Help -->
+                <button id="helpBtn" class="icon-btn" title="Help & Guide">
+                    ℹ️
+                </button>
+
+                <!-- Theme (Placeholder) -->
+                <div id="themeSelector" style="display: none;"></div>
             </div>
         </div>
     </header>
@@ -105,11 +112,6 @@
                 <button class="btn btn-primary btn-sm" onclick="app.generatePrediction()">
                     Generate Prediction
                 </button>
-            </div>
-            <div class="header-actions">
-                <button class="icon-btn" id="voiceCommandBtn" title="Voice Commands">🎤</button>
-                <button class="icon-btn" id="themeToggle" title="Toggle Theme">🌙</button>
-                <button class="icon-btn" id="helpBtn" title="Help & Guide">ℹ️</button>
             </div>
             <div class="card-body">
                 <div class="prediction-display">
