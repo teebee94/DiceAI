@@ -22,16 +22,20 @@ let auth = null;
 let db = null;
 
 function initializeFirebase() {
-    // Firebase disabled - no credentials configured
-    // Firebase disabled - no credentials configured
-    console.warn('⚠️ Sync Disabled: Add your Firebase keys in firebase-config.js to enable cloud sync.');
-    console.warn('Get keys from: https://console.firebase.google.com/');
+    // Check if keys are configured
+    if (firebaseConfig.apiKey === "YOUR_API_KEY_HERE") {
+        console.log('ℹ️ Firebase not configured yet.');
+        return false;
+    }
 
-    /* UNCOMMENT THIS BLOCK AFTER ADDING YOUR FIREBASE CREDENTIALS
-    
     try {
         // Initialize Firebase
-        firebaseApp = firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) {
+            firebaseApp = firebase.initializeApp(firebaseConfig);
+        } else {
+            firebaseApp = firebase.app();
+        }
+
         auth = firebase.auth();
         db = firebase.firestore();
 
@@ -39,9 +43,9 @@ function initializeFirebase() {
         db.enablePersistence()
             .catch((err) => {
                 if (err.code === 'failed-precondition') {
-                    console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+                    console.warn('Persistence failed: Multiple tabs open');
                 } else if (err.code === 'unimplemented') {
-                    console.warn('The current browser doesn\'t support persistence.');
+                    console.warn('Persistence not supported');
                 }
             });
 
@@ -55,8 +59,12 @@ function initializeFirebase() {
                 if (window.app && window.app.firebaseSync) {
                     window.app.firebaseSync.onAuthChanged(user);
                 }
+                const authBtn = document.getElementById('authButton');
+                if (authBtn) authBtn.textContent = '👤 ' + (user.email ? user.email.split('@')[0] : 'Guest');
             } else {
                 console.log('❌ User signed out');
+                const authBtn = document.getElementById('authButton');
+                if (authBtn) authBtn.textContent = '☁️ Cloud Sync';
             }
         });
 
@@ -65,9 +73,6 @@ function initializeFirebase() {
         console.error('❌ Firebase initialization failed:', error);
         return false;
     }
-    */
-
-    return false;
 }
 
 // Authentication functions

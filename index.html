@@ -47,12 +47,12 @@
             <h1 class="header-title">🎲 DiceAI</h1>
             <p class="header-subtitle">Advanced Self-Learning Prediction System</p>
 
-            <!-- Auth & Sync Status (Hidden - Firebase Disabled) -->
+            <!-- Auth & Sync Status -->
             <div
-                style="margin-top: var(--space-md); display: none; gap: var(--space-md); align-items: center; justify-content: center; flex-wrap: wrap;">
+                style="margin-top: var(--space-md); display: flex; gap: var(--space-md); align-items: center; justify-content: center; flex-wrap: wrap;">
                 <button id="authButton" class="btn btn-sm"
                     style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);"
-                    onclick="toggleAuthModal()">🔒 Sign In</button>
+                    onclick="toggleAuthModal()">☁️ Cloud Sync</button>
                 <div id="syncStatus" style="font-size: var(--font-size-xs); color: var(--color-text-tertiary);"></div>
             </div>
 
@@ -129,6 +129,12 @@
                     <p class="confidence-text">
                         <span id="confidenceText">-</span>
                     </p>
+
+                    <!-- Auto-Bet Recommendation (NEW) -->
+                    <div id="betRecommendation"
+                        style="display: none; margin-top: 15px; padding: 15px; border-radius: 8px; font-weight: 800; font-size: 1.5rem; text-transform: uppercase; animation: pulse 2s infinite;">
+                        <!-- JS will populate: "BET BIG (High Risk)" -->
+                    </div>
 
                     <!-- Competitive Mode Controls -->
                     <div

@@ -262,6 +262,73 @@ class ChartVisualizer {
         return this.charts[canvasId];
     }
 
+    // Create Day of Week performance chart (NEW)
+    createDayPerformanceChart(canvasId) {
+        // Mock data logic - in real usage, we'd aggregate analytics.history by day
+        // This requires the AnalyticsEngine to support getDayStats()
+        // For now, we'll try to calculate it on the fly or shim it
+
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const dayStats = Array(7).fill(0).map(() => ({ total: 0, wins: 0 }));
+
+        // Aggregate existing history
+        if (this.app && this.app.predictionEngine && this.app.predictionEngine.history) {
+            this.app.predictionEngine.history.forEach(entry => {
+                const date = new Date(entry.timestamp);
+                const dayIndex = date.getDay();
+                dayStats[dayIndex].total++;
+                if (entry.predictedCorrectly) dayStats[dayIndex].wins++;
+            });
+        }
+
+        const winRates = dayStats.map(d => d.total > 0 ? (d.wins / d.total) * 100 : 0);
+
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return null;
+
+        if (this.charts[canvasId]) {
+            this.charts[canvasId].destroy();
+        }
+
+        this.charts[canvasId] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: days,
+                datasets: [{
+                    label: 'Win Rate %',
+                    data: winRates,
+                    backgroundColor: winRates.map(rate => rate > 50 ? '#22c55e' : rate > 30 ? '#f59e0b' : '#ef4444'),
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    title: {
+                        display: true,
+                        text: 'Best Winning Days',
+                        color: '#fff'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: { color: '#fff' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    },
+                    x: {
+                        ticks: { color: '#fff' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    }
+                }
+            }
+        });
+
+        return this.charts[canvasId];
+    }
+
     // Destroy all charts
     destroyAll() {
         Object.values(this.charts).forEach(chart => chart?.destroy());
@@ -282,6 +349,8 @@ class ChartVisualizer {
                 this.createBigSmallChart(canvasId);
             } else if (canvasId.includes('hourly')) {
                 this.createHourlyPerformanceChart(canvasId);
+            } else if (canvasId.includes('day')) {
+                this.createDayPerformanceChart(canvasId);
             }
         });
     }
